@@ -1,0 +1,345 @@
+# Example CV Data for CVForge
+# This is a comprehensive example showing all supported fields and best practices
+
+personal:
+  name: "Alex Johnson"
+  email: "alex.johnson@email.com"
+  phone: "+1-555-0123"
+  location: "San Francisco, CA"
+  linkedin: "https://linkedin.com/in/alexjohnson"
+  github: "https://github.com/alexjohnson"
+  website: "https://alexjohnson.dev"
+
+summary: |
+  Senior Full-Stack Engineer with 8+ years of experience building scalable web applications 
+  and leading cross-functional teams. Specialized in cloud architecture, microservices, and 
+  developer productivity tools. Passionate about open-source and mentoring junior developers.
+
+experience:
+  - company: "TechCorp Inc."
+    position: "Senior Software Engineer"
+    location: "San Francisco, CA"
+    start_date: "2021-03"
+    end_date: "present"
+    description: "Lead engineer for cloud infrastructure and developer tools team"
+    achievements:
+      - text: "Architected and implemented microservices migration strategy, reducing deployment time from 2 hours to 15 minutes and improving system reliability to 99.95% uptime"
+        skills: ["Kubernetes", "Docker", "AWS", "Terraform", "Python", "Go"]
+        impact: "high"
+        metrics:
+          deployment_time: "87.5% reduction"
+          uptime: "99.95%"
+          services_migrated: 25
+        keywords: ["cloud migration", "DevOps", "infrastructure as code"]
+      
+      - text: "Built internal developer platform that automated CI/CD pipelines, reducing onboarding time for new engineers by 60% and increasing deployment frequency by 3x"
+        skills: ["Jenkins", "GitLab CI", "Python", "React", "PostgreSQL"]
+        impact: "high"
+        metrics:
+          onboarding_time: "60% reduction"
+          deployment_frequency: "3x increase"
+          engineers_onboarded: 45
+        keywords: ["developer experience", "automation", "CI/CD"]
+      
+      - text: "Led team of 5 engineers to develop real-time analytics dashboard processing 10M+ events per day with sub-100ms latency"
+        skills: ["Apache Kafka", "Redis", "Node.js", "React", "TypeScript", "MongoDB"]
+        impact: "high"
+        metrics:
+          events_per_day: "10M+"
+          latency: "< 100ms"
+          team_size: 5
+        keywords: ["real-time processing", "big data", "team leadership"]
+      
+      - text: "Implemented comprehensive monitoring and alerting system using Prometheus and Grafana, reducing mean time to detection (MTTD) by 75%"
+        skills: ["Prometheus", "Grafana", "Python", "Kubernetes"]
+        impact: "medium"
+        metrics:
+          mttd_reduction: "75%"
+          alerts_configured: 150
+        keywords: ["observability", "monitoring", "SRE"]
+      
+      - text: "Mentored 8 junior engineers through code reviews and pair programming sessions, with 6 receiving promotions within 18 months"
+        skills: ["Mentoring", "Code Review", "Technical Leadership"]
+        impact: "medium"
+        metrics:
+          mentees: 8
+          promotions: 6
+        keywords: ["mentorship", "leadership", "team development"]
+
+  - company: "StartupXYZ"
+    position: "Full-Stack Engineer"
+    location: "Remote"
+    start_date: "2019-01"
+    end_date: "2021-02"
+    description: "Early engineer at fast-growing SaaS startup"
+    achievements:
+      - text: "Developed core product features from scratch, contributing to 40% of the codebase and helping achieve Series A funding of $10M"
+        skills: ["React", "Node.js", "PostgreSQL", "AWS", "TypeScript"]
+        impact: "high"
+        metrics:
+          codebase_contribution: "40%"
+          funding: "$10M"
+        keywords: ["startup", "product development", "full-stack"]
+      
+      - text: "Optimized database queries and implemented caching strategy, improving API response times by 70% and reducing infrastructure costs by $5K/month"
+        skills: ["PostgreSQL", "Redis", "SQL optimization", "Node.js"]
+        impact: "high"
+        metrics:
+          performance_improvement: "70%"
+          cost_savings: "$5K/month"
+        keywords: ["performance optimization", "cost reduction"]
+      
+      - text: "Built RESTful API serving 1M+ requests per day with comprehensive documentation and automated testing achieving 95% code coverage"
+        skills: ["Node.js", "Express", "Jest", "Swagger", "REST API"]
+        impact: "medium"
+        metrics:
+          requests_per_day: "1M+"
+          code_coverage: "95%"
+        keywords: ["API development", "testing", "documentation"]
+      
+      - text: "Implemented OAuth 2.0 authentication and role-based access control (RBAC) system supporting 50K+ users"
+        skills: ["OAuth 2.0", "JWT", "Node.js", "Security"]
+        impact: "medium"
+        metrics:
+          users_supported: "50K+"
+        keywords: ["authentication", "security", "access control"]
+
+  - company: "Digital Agency Co."
+    position: "Software Developer"
+    location: "New York, NY"
+    start_date: "2016-06"
+    end_date: "2018-12"
+    description: "Full-stack developer building client websites and web applications"
+    achievements:
+      - text: "Delivered 15+ client projects on time and within budget, maintaining 100% client satisfaction rate"
+        skills: ["JavaScript", "PHP", "WordPress", "React", "MySQL"]
+        impact: "medium"
+        metrics:
+          projects_delivered: 15
+          satisfaction_rate: "100%"
+        keywords: ["client work", "project delivery", "web development"]
+      
+      - text: "Developed custom WordPress plugins and themes used by 10K+ websites, generating $50K in licensing revenue"
+        skills: ["PHP", "WordPress", "JavaScript", "MySQL"]
+        impact: "medium"
+        metrics:
+          websites_using: "10K+"
+          revenue: "$50K"
+        keywords: ["WordPress development", "plugin development"]
+      
+      - text: "Implemented responsive designs and improved website performance, achieving average 90+ Google PageSpeed scores"
+        skills: ["HTML", "CSS", "JavaScript", "Performance Optimization"]
+        impact: "low"
+        metrics:
+          pagespeed_score: "90+"
+        keywords: ["responsive design", "web performance", "frontend"]
+
+skills:
+  technical:
+    - name: "Python"
+      level: "expert"
+      years: 8
+    - name: "JavaScript/TypeScript"
+      level: "expert"
+      years: 8
+    - name: "React"
+      level: "advanced"
+      years: 6
+    - name: "Node.js"
+      level: "advanced"
+      years: 7
+    - name: "Kubernetes"
+      level: "advanced"
+      years: 4
+    - name: "Docker"
+      level: "advanced"
+      years: 5
+    - name: "AWS"
+      level: "advanced"
+      years: 6
+    - name: "PostgreSQL"
+      level: "advanced"
+      years: 7
+    - name: "Go"
+      level: "intermediate"
+      years: 2
+    - name: "Redis"
+      level: "intermediate"
+      years: 4
+    - name: "Apache Kafka"
+      level: "intermediate"
+      years: 3
+    - name: "Terraform"
+      level: "intermediate"
+      years: 3
+    - name: "GraphQL"
+      level: "intermediate"
+      years: 2
+  
+  soft:
+    - "Technical Leadership"
+    - "Team Collaboration"
+    - "Mentoring"
+    - "Problem Solving"
+    - "Communication"
+    - "Agile/Scrum"
+    - "Project Management"
+  
+  languages:
+    - language: "English"
+      proficiency: "Native"
+    - language: "Spanish"
+      proficiency: "Professional"
+    - language: "French"
+      proficiency: "Conversational"
+
+education:
+  - institution: "University of California, Berkeley"
+    degree: "Bachelor of Science"
+    field: "Computer Science"
+    location: "Berkeley, CA"
+    start_date: "2012-09"
+    graduation_date: "2016-05"
+    status: "completed"
+    gpa: "3.7/4.0"
+    honors:
+      - "Dean's List (6 semesters)"
+      - "CS Department Scholarship"
+    relevant_coursework:
+      - "Distributed Systems"
+      - "Machine Learning"
+      - "Database Systems"
+      - "Computer Networks"
+      - "Software Engineering"
+
+certifications:
+  - name: "AWS Certified Solutions Architect - Professional"
+    issuer: "Amazon Web Services"
+    date: "2022-06"
+    expiry: "2025-06"
+    credential_id: "AWS-PSA-12345"
+    url: "https://aws.amazon.com/verification"
+  
+  - name: "Certified Kubernetes Administrator (CKA)"
+    issuer: "Cloud Native Computing Foundation"
+    date: "2021-09"
+    expiry: "2024-09"
+    credential_id: "CKA-67890"
+    url: "https://www.cncf.io/certification/cka/"
+  
+  - name: "Professional Scrum Master I (PSM I)"
+    issuer: "Scrum.org"
+    date: "2020-03"
+    credential_id: "PSM-54321"
+    url: "https://www.scrum.org/certificates/12345"
+
+volunteer:
+  - organization: "Open Source Initiative"
+    role: "Core Contributor"
+    start_date: "2020-01"
+    end_date: "present"
+    description: "Active contributor to popular open-source projects"
+    achievements:
+      - "Contributed 200+ pull requests to various open-source projects"
+      - "Maintained 3 popular npm packages with 50K+ weekly downloads"
+      - "Reviewed and mentored 100+ first-time contributors"
+    type: "open-source"
+  
+  - organization: "PyBay Conference"
+    role: "Program Committee Member"
+    start_date: "2021-01"
+    end_date: "present"
+    description: "Help organize annual Python conference in Bay Area"
+    achievements:
+      - "Reviewed 150+ talk proposals"
+      - "Coordinated speaker logistics for 50+ speakers"
+      - "Mentored 10 first-time conference speakers"
+    type: "conference"
+  
+  - organization: "SF Tech Meetup"
+    role: "Co-Organizer"
+    start_date: "2019-06"
+    end_date: "present"
+    description: "Monthly meetup for software engineers in San Francisco"
+    achievements:
+      - "Organized 40+ meetup events with 100+ attendees each"
+      - "Secured sponsorships from 15+ tech companies"
+      - "Built community of 2,000+ members"
+    type: "meetup"
+  
+  - organization: "Code for America"
+    role: "Volunteer Developer"
+    start_date: "2018-03"
+    end_date: "2019-12"
+    description: "Built civic tech projects for local government"
+    achievements:
+      - "Developed web application used by 5 city departments"
+      - "Improved public service accessibility for 100K+ residents"
+    type: "community"
+
+projects:
+  - name: "DevTools CLI"
+    description: "Command-line tool for developer productivity with 5K+ GitHub stars"
+    technologies: ["Python", "Click", "Git", "CI/CD"]
+    url: "https://devtools-cli.dev"
+    github: "https://github.com/alexjohnson/devtools-cli"
+    start_date: "2020-06"
+    end_date: "present"
+    achievements:
+      - "5,000+ GitHub stars and 500+ forks"
+      - "Featured in GitHub Trending for 2 weeks"
+      - "Used by developers at 100+ companies"
+  
+  - name: "API Monitor Dashboard"
+    description: "Real-time monitoring dashboard for REST APIs with beautiful visualizations"
+    technologies: ["React", "Node.js", "WebSocket", "D3.js", "MongoDB"]
+    github: "https://github.com/alexjohnson/api-monitor"
+    start_date: "2019-03"
+    end_date: "2020-05"
+    achievements:
+      - "1,000+ GitHub stars"
+      - "Adopted by 50+ companies for internal use"
+  
+  - name: "Tech Blog"
+    description: "Personal blog about software engineering and cloud architecture"
+    technologies: ["Next.js", "MDX", "Vercel"]
+    url: "https://alexjohnson.dev/blog"
+    start_date: "2018-01"
+    end_date: "present"
+    achievements:
+      - "50+ technical articles published"
+      - "100K+ monthly readers"
+      - "Featured on HackerNews front page 5 times"
+
+publications:
+  - title: "Scaling Microservices: Lessons from Production"
+    venue: "IEEE Software Magazine"
+    date: "2023-05"
+    authors: ["Alex Johnson", "Sarah Chen"]
+    url: "https://doi.org/10.1109/example"
+    description: "Case study on microservices architecture patterns and anti-patterns"
+  
+  - title: "Building Developer-Friendly APIs: A Practical Guide"
+    venue: "ACM Queue"
+    date: "2022-11"
+    authors: ["Alex Johnson"]
+    url: "https://queue.acm.org/example"
+    description: "Best practices for API design and documentation"
+
+awards:
+  - title: "Employee of the Year"
+    issuer: "TechCorp Inc."
+    date: "2023-12"
+    description: "Recognized for outstanding technical leadership and mentorship"
+  
+  - title: "Hackathon Winner - Best Developer Tool"
+    issuer: "TechCrunch Disrupt"
+    date: "2020-09"
+    description: "Won first place for building innovative developer productivity tool"
+  
+  - title: "Open Source Contributor Award"
+    issuer: "GitHub"
+    date: "2021-10"
+    description: "Recognized for significant contributions to open-source community"
+
+# Made with Bob

@@ -1,0 +1,202 @@
+# CVForge Settings Configuration
+# Copy this file to settings.yaml and configure your preferences
+
+# Application Settings
+app:
+  name: "CVForge"
+  version: "0.1.0"
+  debug: false
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# File Paths
+paths:
+  cv_data: "config/cv_data.yaml"
+  output_dir: "output"
+  templates_dir: "templates/cv"
+  logs_dir: "logs"
+
+# LLM Provider Configuration
+# You can configure multiple providers with arbitrary names
+# The system will use the provider specified in 'default_provider'
+llm:
+  # Which provider to use by default
+  default_provider: "claude_main"
+  
+  # Provider configurations
+  # Each provider has a unique name (key) and configuration
+  providers:
+    # Claude API - Main production instance
+    claude_main:
+      type: "claude"
+      api_key: "${ANTHROPIC_API_KEY}"  # Set via environment variable
+      model: "claude-3-5-sonnet-20241022"
+      max_tokens: 4096
+      temperature: 0.7
+      timeout: 60  # seconds
+    
+    # Claude API - Alternative with different settings
+    claude_creative:
+      type: "claude"
+      api_key: "${ANTHROPIC_API_KEY}"
+      model: "claude-3-5-sonnet-20241022"
+      max_tokens: 8192
+      temperature: 0.9  # More creative
+      timeout: 90
+    
+    # Ollama - Local instance with Llama 3
+    ollama_local:
+      type: "ollama"
+      base_url: "http://localhost:11434"
+      model: "llama3:latest"
+      temperature: 0.7
+      timeout: 120
+    
+    # Ollama - Remote instance with different model
+    ollama_remote:
+      type: "ollama"
+      base_url: "http://192.168.1.100:11434"
+      model: "mistral:latest"
+      temperature: 0.8
+      timeout: 120
+    
+    # Ollama - Another local instance on different port
+    ollama_experimental:
+      type: "ollama"
+      base_url: "http://localhost:11435"
+      model: "codellama:latest"
+      temperature: 0.6
+      timeout: 180
+
+# CV Generation Settings
+cv_generation:
+  # Maximum number of achievements to include per job
+  max_achievements_per_job: 5
+  
+  # Minimum score threshold for achievement inclusion (0.0 - 1.0)
+  min_achievement_score: 0.3
+  
+  # Whether to rewrite achievement text or use original
+  rewrite_achievements: true
+  
+  # Include volunteer work section
+  include_volunteer: true
+  
+  # Include projects section
+  include_projects: true
+  
+  # Include publications section
+  include_publications: true
+  
+  # Include awards section
+  include_awards: true
+  
+  # Maximum CV length in pages (approximate)
+  max_pages: 2
+
+# Achievement Scoring Weights
+# These weights determine how achievements are scored for relevance
+# Total should sum to 1.0
+scoring:
+  keyword_match: 0.30      # Direct keyword matching with job description
+  skill_match: 0.25        # Technical skills alignment
+  impact_level: 0.20       # Achievement impact (high/medium/low)
+  recency: 0.15           # How recent the achievement is
+  semantic_similarity: 0.10  # Semantic meaning similarity (requires LLM)
+
+# Job Scraping Settings
+job_scraping:
+  # LinkedIn scraping
+  linkedin:
+    enabled: true
+    headless: true  # Run browser in headless mode
+    timeout: 30  # seconds
+    wait_for_manual_login: true  # Wait for user to login manually
+  
+  # User agent for web scraping
+  user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+
+# PDF Generation Settings
+pdf:
+  # Template to use (filename without extension in templates/cv/)
+  template: "modern"
+  
+  # Page settings
+  page_size: "A4"  # A4, Letter
+  margin_top: "2cm"
+  margin_bottom: "2cm"
+  margin_left: "2cm"
+  margin_right: "2cm"
+  
+  # Font settings
+  font_family: "Arial, Helvetica, sans-serif"
+  font_size: "11pt"
+  
+  # Color scheme (hex colors)
+  colors:
+    primary: "#2c3e50"
+    secondary: "#34495e"
+    accent: "#3498db"
+    text: "#2c3e50"
+    link: "#3498db"
+
+# Web UI Settings
+web:
+  host: "127.0.0.1"
+  port: 5000
+  secret_key: "${FLASK_SECRET_KEY}"  # Set via environment variable
+  session_timeout: 3600  # seconds (1 hour)
+
+# Data Validation Settings
+validation:
+  # Require email format validation
+  strict_email: true
+  
+  # Require URL format validation
+  strict_urls: true
+  
+  # Minimum number of achievements per job
+  min_achievements_per_job: 2
+  
+  # Warn if achievement lacks metrics
+  warn_missing_metrics: true
+  
+  # Warn if achievement lacks skills
+  warn_missing_skills: true
+
+# Logging Settings
+logging:
+  # Log file settings
+  file:
+    enabled: true
+    path: "logs/cvforge.log"
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Console logging
+  console:
+    enabled: true
+    format: "%(levelname)s: %(message)s"
+
+# Feature Flags
+features:
+  # Enable achievement memory helper (interactive questioning)
+  achievement_memory_helper: false  # Future feature
+  
+  # Enable CV improvement suggestions
+  cv_improvement_suggestions: true
+  
+  # Enable semantic similarity scoring (requires LLM)
+  semantic_scoring: true
+  
+  # Enable automatic skill extraction from achievements
+  auto_skill_extraction: false  # Future feature
+
+# Cache Settings
+cache:
+  # Cache LLM responses to save API calls
+  enabled: true
+  ttl: 86400  # seconds (24 hours)
+  max_size: 1000  # maximum number of cached items
+
+# Made with Bob
