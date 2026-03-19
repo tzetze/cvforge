@@ -556,7 +556,9 @@ education:
     degree: string (required)
     field: string (optional)
     location: string (optional)
-    graduation_date: string (required, YYYY-MM or YYYY)
+    start_date: string (optional, YYYY-MM or YYYY)
+    graduation_date: string (optional, YYYY-MM or YYYY)
+    status: string (optional, one of: completed, in-progress, incomplete)
     gpa: string (optional)
     honors: list[string] (optional)
     relevant_coursework: list[string] (optional)
@@ -567,6 +569,15 @@ certifications:
     date: string (required, YYYY-MM)
     expiry: string (optional, YYYY-MM)
     credential_id: string (optional)
+
+volunteer:
+  - organization: string (required)
+    role: string (required)
+    start_date: string (required, YYYY-MM)
+    end_date: string (optional, YYYY-MM or "present")
+    description: string (optional)
+    achievements: list[string] (optional)
+    type: string (optional, e.g., "open-source", "conference", "meetup", "community")
 
 projects:
   - name: string (required)
@@ -612,16 +623,33 @@ class LLMProvider(ABC):
 # config/settings.yaml
 
 llm:
-  provider: "claude"  # or "ollama"
-  claude:
-    api_key: "${CLAUDE_API_KEY}"  # From environment
-    model: "claude-3-5-sonnet-20241022"
-    max_tokens: 4096
-    temperature: 0.7
-  ollama:
-    base_url: "http://localhost:11434"
-    model: "llama3.1"
-    timeout: 60
+  default_provider: "claude-main"  # Name of the default provider to use
+  
+  providers:
+    claude-main:
+      type: "claude"
+      api_key: "${CLAUDE_API_KEY}"
+      model: "claude-3-5-sonnet-20241022"
+      max_tokens: 4096
+      temperature: 0.7
+    
+    ollama-local:
+      type: "ollama"
+      base_url: "http://localhost:11434"
+      model: "llama3.1"
+      timeout: 60
+    
+    ollama-advanced:
+      type: "ollama"
+      base_url: "http://localhost:11434"
+      model: "llama3.1:70b"
+      timeout: 120
+    
+    ollama-compact:
+      type: "ollama"
+      base_url: "http://localhost:11434"
+      model: "llama3.1:8b"
+      timeout: 30
 
 app:
   debug: false
