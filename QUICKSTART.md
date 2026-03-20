@@ -21,7 +21,13 @@ WeasyPrint (used for PDF generation) requires system libraries. You have two opt
 
 # Install required libraries
 brew install pango gdk-pixbuf libffi
+
+# IMPORTANT: After installing, you must use the helper script to run Python
+# This sets up the library path so Python can find the Homebrew libraries
+./run_with_libs.sh python3 examples/simple_pdf_example.py
 ```
+
+**Why the helper script?** macOS doesn't automatically add Homebrew libraries to Python's search path. The `run_with_libs.sh` script sets the `DYLD_LIBRARY_PATH` environment variable so WeasyPrint can find the installed libraries.
 
 **On Ubuntu/Debian:**
 ```bash
@@ -141,8 +147,8 @@ Note: PDF download won't work without system libraries, but you can view and man
 
 3. **Requires System Libraries**: Generate PDF
    ```bash
-   # After installing pango, gdk-pixbuf, libffi
-   python examples/simple_pdf_example.py
+   # After installing pango, gdk-pixbuf, libffi with Homebrew
+   ./run_with_libs.sh python3 examples/simple_pdf_example.py
    ```
 
 4. **Requires LLM Setup**: Get AI suggestions
@@ -162,8 +168,8 @@ python examples/validate_cv_example.py
 # 2. Get improvement suggestions (if LLM configured)
 python examples/improve_cv_example.py
 
-# 3. Generate a simple PDF
-python examples/simple_pdf_example.py
+# 3. Generate a simple PDF (use helper script on macOS)
+./run_with_libs.sh python3 examples/simple_pdf_example.py
 
 # 4. Check the output
 open output/your_name_cv.pdf
@@ -182,11 +188,18 @@ This means you need to install system libraries for PDF generation:
 
 # Then install libraries
 brew install pango gdk-pixbuf libffi
+
+# IMPORTANT: Use the helper script to run Python with library path
+./run_with_libs.sh python3 examples/simple_pdf_example.py
 ```
+
+**Why the helper script?** On macOS, Homebrew installs libraries to `/opt/homebrew/lib/`, but Python doesn't automatically look there. The `run_with_libs.sh` script sets the `DYLD_LIBRARY_PATH` environment variable so WeasyPrint can find the libraries.
 
 **Ubuntu/Debian:**
 ```bash
 sudo apt-get install libpango-1.0-0 libpangoft2-1.0-0 libgdk-pixbuf2.0-0 libffi-dev
+# No helper script needed on Linux
+python examples/simple_pdf_example.py
 ```
 
 **Alternative**: Use features that don't require PDF generation (validation, achievement helper, improvement suggestions)

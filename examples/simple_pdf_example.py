@@ -37,7 +37,7 @@ def main():
         return
     
     cv_data = load_cv_data(str(cv_data_path))
-    print(f"✓ Loaded CV for {cv_data.personal_info.name}")
+    print(f"✓ Loaded CV for {cv_data.personal.name}")
     
     # Generate PDF
     print("\n[2/2] Generating PDF...")
@@ -48,7 +48,7 @@ def main():
     output_dir.mkdir(exist_ok=True)
     
     # Generate filename
-    name_slug = cv_data.personal_info.name.lower().replace(" ", "_")
+    name_slug = cv_data.personal.name.lower().replace(" ", "_")
     output_path = output_dir / f"{name_slug}_cv.pdf"
     
     # Generate PDF

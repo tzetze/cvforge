@@ -226,9 +226,9 @@ class PDFGenerator:
         
         # Prepare context from CVData
         context = {
-            "personal_info": cv_data.personal_info.model_dump(),
+            "personal_info": cv_data.personal.model_dump(),
             "summary": cv_data.summary,
-            "experiences": cv_data.experiences,
+            "experiences": cv_data.experience,
             "skills": cv_data.skills.model_dump() if cv_data.skills else None,
             "education": cv_data.education,
             "certifications": cv_data.certifications,
@@ -286,13 +286,11 @@ class PDFGenerator:
         if custom_css:
             stylesheets.append(CSS(string=custom_css, font_config=self.font_config))
         
-        # Generate PDF with metadata
+        # Generate PDF (WeasyPrint 57.2 doesn't support metadata in write_pdf)
         html.write_pdf(
             output_path,
             stylesheets=stylesheets,
-            font_config=self.font_config,
-            pdf_forms=False,  # Disable forms for ATS compatibility
-            **self._prepare_pdf_metadata(metadata)
+            font_config=self.font_config
         )
     
     def _prepare_pdf_metadata(
@@ -336,8 +334,8 @@ class PDFGenerator:
             Metadata dictionary
         """
         return {
-            "title": f"{cv_data.personal_info.name} - Curriculum Vitae",
-            "author": cv_data.personal_info.name,
+            "title": f"{cv_data.personal.name} - Curriculum Vitae",
+            "author": cv_data.personal.name,
             "subject": "Curriculum Vitae",
             "keywords": "CV, Resume, Professional Experience"
         }

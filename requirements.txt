@@ -14,7 +14,9 @@ jinja2==3.1.3
 werkzeug==3.0.1
 
 # PDF generation
-weasyprint==61.2
+# Note: WeasyPrint 57.2 with pydyf 0.5.0 is the stable combination for macOS
+weasyprint==57.2
+pydyf==0.5.0
 pillow==10.2.0
 
 # Web scraping
