@@ -37,7 +37,7 @@ def main():
         return
     
     cv_data = load_cv_data(str(cv_data_path))
-    print(f"✓ Loaded CV for {cv_data.personal_info.name}")
+    print(f"✓ Loaded CV for {cv_data.personal.name}")
     
     # Validate CV data
     print("\n[2/2] Validating CV data...")

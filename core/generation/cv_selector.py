@@ -261,6 +261,10 @@ class CVContentSelector:
     
     def _export_personal_info(self, cv_data: CVData) -> Dict[str, Any]:
         """Export personal information."""
+        return cv_data.personal.model_dump()
+    
+    def _export_personal_info_old(self, cv_data: CVData) -> Dict[str, Any]:
+        """Export personal information (old method)."""
         return {
             "name": cv_data.personal.name,
             "email": cv_data.personal.email,

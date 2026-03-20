@@ -214,7 +214,7 @@ class CVValidator:
     
     def _validate_personal_info(self, cv_data: CVData, report: ValidationReport):
         """Validate personal information section."""
-        pi = cv_data.personal_info
+        pi = cv_data.personal
         
         # Required fields
         if not pi.name or len(pi.name.strip()) < 2:
@@ -296,7 +296,7 @@ class CVValidator:
     
     def _validate_experiences(self, cv_data: CVData, report: ValidationReport):
         """Validate work experiences."""
-        if not cv_data.experiences:
+        if not cv_data.experience:
             report.add_error(
                 "experiences",
                 "At least one work experience is required",
@@ -305,15 +305,15 @@ class CVValidator:
             )
             return
         
-        if len(cv_data.experiences) < self.min_experiences:
+        if len(cv_data.experience) < self.min_experiences:
             report.add_warning(
                 "experiences",
-                f"Only {len(cv_data.experiences)} experience(s) listed (recommended: {self.min_experiences}+)",
+                f"Only {len(cv_data.experience)} experience(s) listed (recommended: {self.min_experiences}+)",
                 "experiences",
                 "Add more relevant work experiences"
             )
         
-        for i, exp in enumerate(cv_data.experiences):
+        for i, exp in enumerate(cv_data.experience):
             self._validate_experience(exp, i, report)
     
     def _validate_experience(self, exp: Experience, index: int, report: ValidationReport):
@@ -524,7 +524,7 @@ class CVValidator:
         # Check overall CV completeness
         sections_present = sum([
             bool(cv_data.summary),
-            bool(cv_data.experiences),
+            bool(cv_data.experience),
             bool(cv_data.skills),
             bool(cv_data.education),
             bool(cv_data.certifications),

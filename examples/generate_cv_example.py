@@ -40,8 +40,8 @@ def main():
     print("\n[1/6] Loading CV data...")
     data_manager = CVDataManager()
     cv_data = data_manager.load_cv_data("config/cv_data.yaml")
-    print(f"✓ Loaded CV for {cv_data.personal_info.name}")
-    print(f"  - {len(cv_data.experiences)} experiences")
+    print(f"✓ Loaded CV for {cv_data.personal.name}")
+    print(f"  - {len(cv_data.experience)} experiences")
     print(f"  - {sum(len(exp.achievements) for exp in cv_data.experiences)} total achievements")
     
     # Step 2: Get job description
@@ -138,13 +138,13 @@ def main():
     print("\n[6/6] Generating PDF...")
     generator = PDFGenerator()
     
-    output_path = Path("output") / f"{cv_data.personal_info.name.lower().replace(' ', '_')}_cv.pdf"
+    output_path = Path("output") / f"{cv_data.personal.name.lower().replace(' ', '_')}_cv.pdf"
     output_path.parent.mkdir(exist_ok=True)
     
     if use_tailored:
         # Use tailored content
         pdf_path = generator.generate_pdf_from_selected_content(
-            personal_info=cv_data.personal_info.model_dump(),
+            personal_info=cv_data.personal.model_dump(),
             summary=tailored_cv.summary,
             experiences=tailored_cv.experiences,
             skills=cv_data.skills.model_dump() if cv_data.skills else None,
@@ -156,7 +156,7 @@ def main():
     else:
         # Use selected content without tailoring
         pdf_path = generator.generate_pdf_from_selected_content(
-            personal_info=cv_data.personal_info.model_dump(),
+            personal_info=cv_data.personal.model_dump(),
             summary=cv_data.summary,
             experiences=selected_content.experiences,
             skills=cv_data.skills.model_dump() if cv_data.skills else None,

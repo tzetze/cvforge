@@ -133,7 +133,7 @@ class CVImprover:
             suggestions.extend(summary_suggestions)
         
         # Analyze achievements
-        for exp_idx, experience in enumerate(cv_data.experiences):
+        for exp_idx, experience in enumerate(cv_data.experience):
             for ach_idx, achievement in enumerate(experience.achievements):
                 ach_suggestions = self._analyze_achievement(
                     achievement,
@@ -167,7 +167,7 @@ class CVImprover:
         """Analyze professional summary and suggest improvements."""
         
         # Extract key info for context
-        years_experience = len(cv_data.experiences)
+        years_experience = len(cv_data.experience)
         top_skills = []
         if cv_data.skills and cv_data.skills.technical:
             top_skills = [s.name for s in cv_data.skills.technical[:5]]
@@ -283,9 +283,9 @@ Keep the core truth of the achievement - don't fabricate details."""
         
         # Build context
         context_parts = [
-            f"Name: {cv_data.personal_info.name}",
-            f"Experiences: {len(cv_data.experiences)}",
-            f"Total achievements: {sum(len(exp.achievements) for exp in cv_data.experiences)}",
+            f"Name: {cv_data.personal.name}",
+            f"Experiences: {len(cv_data.experience)}",
+            f"Total achievements: {sum(len(exp.achievements) for exp in cv_data.experience)}",
         ]
         
         if cv_data.skills and cv_data.skills.technical:
