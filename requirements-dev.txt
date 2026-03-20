@@ -12,7 +12,7 @@ mypy==1.8.0
 flake8==7.0.0
 
 # Development tools
-ipython==8.22.1
+ipython==8.18.1
 ipdb==0.13.13
 
 # Type stubs
