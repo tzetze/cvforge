@@ -46,7 +46,7 @@ class VolunteerType(str, Enum):
 class Achievement(BaseModel):
     """Individual achievement within a job role."""
     text: str = Field(..., min_length=10, description="Achievement description")
-    skills: List[str] = Field(..., min_items=1, description="Related skills/technologies")
+    skills: List[str] = Field(..., min_length=1, description="Related skills/technologies")
     impact: ImpactLevel = Field(..., description="Impact level of achievement")
     metrics: Optional[Dict[str, Any]] = Field(default=None, description="Quantifiable metrics")
     keywords: Optional[List[str]] = Field(default=None, description="Additional ATS keywords")
@@ -80,7 +80,7 @@ class Experience(BaseModel):
         description="End date (YYYY-MM or 'present')"
     )
     description: Optional[str] = Field(default=None, description="Brief role overview")
-    achievements: List[Achievement] = Field(..., min_items=1, description="List of achievements")
+    achievements: List[Achievement] = Field(..., min_length=1, description="List of achievements")
 
     @field_validator('end_date')
     @classmethod
@@ -205,7 +205,7 @@ class Project(BaseModel):
     """Personal or side project."""
     name: str = Field(..., min_length=1, description="Project name")
     description: str = Field(..., min_length=10, description="Project description")
-    technologies: List[str] = Field(..., min_items=1, description="Technologies used")
+    technologies: List[str] = Field(..., min_length=1, description="Technologies used")
     url: Optional[HttpUrl] = Field(default=None, description="Project URL")
     github: Optional[HttpUrl] = Field(default=None, description="GitHub repository URL")
     achievements: Optional[List[str]] = Field(default=None, description="Key achievements")
@@ -238,7 +238,7 @@ class CVData(BaseModel):
     """Complete CV data structure."""
     personal: PersonalInfo = Field(..., description="Personal information")
     summary: Optional[str] = Field(default=None, description="Professional summary")
-    experience: List[Experience] = Field(..., min_items=1, description="Work experience")
+    experience: List[Experience] = Field(..., min_length=1, description="Work experience")
     skills: Optional[Skills] = Field(default=None, description="Skills")
     education: Optional[List[Education]] = Field(default=None, description="Education")
     certifications: Optional[List[Certification]] = Field(default=None, description="Certifications")
