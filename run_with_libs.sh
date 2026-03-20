@@ -23,4 +23,3 @@ else
     exec "$@"
 fi
 
-# Made with Bob

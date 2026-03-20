@@ -12,4 +12,3 @@ __all__ = [
     'generate_bp',
 ]
 
-# Made with Bob

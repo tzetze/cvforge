@@ -320,4 +320,3 @@ def download():
         flash(f'Error generating PDF: {str(e)}', 'danger')
         return redirect(url_for('generate.preview'))
 
-# Made with Bob
