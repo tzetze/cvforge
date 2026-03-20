@@ -106,8 +106,8 @@ class DataManager:
             # Ensure directory exists
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             
-            # Convert Pydantic model to dict
-            data = cv_data.model_dump(exclude_none=True)
+            # Convert Pydantic model to dict (mode='json' converts Url objects to strings)
+            data = cv_data.model_dump(exclude_none=True, mode='json')
             
             # Save to YAML
             with open(file_path, 'w', encoding='utf-8') as f:
