@@ -1,0 +1,113 @@
+{% extends "web/base.html" %}
+
+{% block title %}CVForge - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12 text-center mb-5">
+        <h1 class="display-4 fw-bold">CVForge</h1>
+        <p class="lead">Intelligent CV Generator powered by AI</p>
+        <p class="text-muted">Create targeted, ATS-compliant CVs tailored to specific job descriptions</p>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-text display-3 text-primary mb-3"></i>
+                <h5 class="card-title">Manage CV Data</h5>
+                <p class="card-text">Store and organize your professional experience, skills, and achievements in a
+                    structured format.</p>
+                <a href="{{ url_for('cv_data.view') }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Manage Data
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-magic display-3 text-success mb-3"></i>
+                <h5 class="card-title">Generate Targeted CV</h5>
+                <p class="card-text">Input a job description and let AI select and tailor your most relevant
+                    achievements.</p>
+                <a href="{{ url_for('generate.index') }}" class="btn btn-success">
+                    <i class="bi bi-stars"></i> Generate CV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-speedometer2 display-3 text-info mb-3"></i>
+                <h5 class="card-title">View Dashboard</h5>
+                <p class="card-text">See your CV statistics, validation status, and get improvement suggestions.</p>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-info">
+                    <i class="bi bi-graph-up"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Key Features</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Intelligent Content Selection</h6>
+                        <p class="text-muted">Multi-factor scoring system automatically selects your most relevant
+                            achievements for each job.</p>
+
+                        <h6><i class="bi bi-check-circle text-success"></i> LLM-Powered Tailoring</h6>
+                        <p class="text-muted">AI rewrites your content to emphasize job-relevant skills while
+                            maintaining authenticity.</p>
+
+                        <h6><i class="bi bi-check-circle text-success"></i> ATS-Compliant Output</h6>
+                        <p class="text-muted">Professional PDF templates designed to pass Applicant Tracking Systems.
+                        </p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> LinkedIn Integration</h6>
+                        <p class="text-muted">Scrape job descriptions directly from LinkedIn URLs for quick CV
+                            generation.</p>
+
+                        <h6><i class="bi bi-check-circle text-success"></i> Quality Validation</h6>
+                        <p class="text-muted">Comprehensive validation checks ensure your CV data is complete and
+                            high-quality.</p>
+
+                        <h6><i class="bi bi-check-circle text-success"></i> Improvement Suggestions</h6>
+                        <p class="text-muted">Get AI-powered suggestions to enhance your achievements and summary.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-lg-12 text-center">
+        <h3>Quick Start</h3>
+        <ol class="list-unstyled mt-3">
+            <li class="mb-2"><span class="badge bg-primary">1</span> Create or import your CV data</li>
+            <li class="mb-2"><span class="badge bg-primary">2</span> Input a job description (manual or LinkedIn URL)
+            </li>
+            <li class="mb-2"><span class="badge bg-primary">3</span> Review AI-selected content and match score</li>
+            <li class="mb-2"><span class="badge bg-primary">4</span> Optionally tailor with LLM for better fit</li>
+            <li class="mb-2"><span class="badge bg-primary">5</span> Download your professional PDF CV</li>
+        </ol>
+        <a href="{{ url_for('generate.index') }}" class="btn btn-lg btn-primary mt-3">
+            <i class="bi bi-rocket"></i> Get Started
+        </a>
+    </div>
+</div>
+{% endblock %}

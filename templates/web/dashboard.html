@@ -1,0 +1,173 @@
+{% extends "web/base.html" %}
+
+{% block title %}Dashboard - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+{% if cv_data %}
+<div class="row">
+    <!-- CV Statistics -->
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-briefcase display-4 text-primary"></i>
+                <h3 class="mt-2">{{ stats.total_experiences }}</h3>
+                <p class="text-muted mb-0">Experiences</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-star display-4 text-warning"></i>
+                <h3 class="mt-2">{{ stats.total_achievements }}</h3>
+                <p class="text-muted mb-0">Achievements</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-code-slash display-4 text-success"></i>
+                <h3 class="mt-2">{{ stats.technical_skills }}</h3>
+                <p class="text-muted mb-0">Technical Skills</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="bi bi-mortarboard display-4 text-info"></i>
+                <h3 class="mt-2">{{ stats.education_entries }}</h3>
+                <p class="text-muted mb-0">Education</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Validation Status -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Validation Status</h5>
+            </div>
+            <div class="card-body">
+                {% if validation_report.is_valid %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i> Your CV data is valid and ready for generation!
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Your CV has {{ validation_report.error_count }}
+                    errors and {{ validation_report.warning_count }} warnings.
+                </div>
+                {% endif %}
+
+                <div class="row text-center mt-3">
+                    <div class="col-md-4">
+                        <span class="badge bg-danger badge-custom">{{ validation_report.error_count }} Errors</span>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="badge bg-warning badge-custom">{{ validation_report.warning_count }}
+                            Warnings</span>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="badge bg-info badge-custom">{{ validation_report.info_count }} Suggestions</span>
+                    </div>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('cv_data.validate') }}" class="btn btn-primary">
+                        <i class="bi bi-clipboard-check"></i> View Full Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-eye"></i> View CV Data
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('cv_data.edit_personal_info') }}" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-person"></i> Edit Personal Info
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('generate.index') }}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-magic"></i> Generate CV
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> CV Overview</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ cv_data.personal_info.name }}</h6>
+                <p class="text-muted">{{ cv_data.personal_info.email }}</p>
+
+                {% if cv_data.summary %}
+                <div class="mt-3">
+                    <strong>Professional Summary:</strong>
+                    <p class="text-muted">{{ cv_data.summary[:200] }}{% if cv_data.summary|length > 200 %}...{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <strong>Recent Experience:</strong>
+                    {% if cv_data.experiences %}
+                    <p class="text-muted">
+                        {{ cv_data.experiences[0].position }} at {{ cv_data.experiences[0].company }}
+                        ({{ cv_data.experiences[0].start_date }} - {{ cv_data.experiences[0].end_date or 'Present' }})
+                    </p>
+                    {% else %}
+                    <p class="text-muted">No experiences added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- No CV Data -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="alert alert-warning">
+            <h4><i class="bi bi-exclamation-triangle"></i> No CV Data Found</h4>
+            <p>You haven't created your CV data yet. Get started by creating your CV profile.</p>
+            <a href="{{ url_for('cv_data.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create CV Data
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
