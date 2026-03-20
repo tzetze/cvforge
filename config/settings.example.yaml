@@ -199,4 +199,3 @@ cache:
   ttl: 86400  # seconds (24 hours)
   max_size: 1000  # maximum number of cached items
 
-# Made with Bob
