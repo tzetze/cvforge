@@ -28,7 +28,14 @@ def create_app(config=None):
     Returns:
         Configured Flask application
     """
-    app = Flask(__name__)
+    # Get the project root directory (parent of web/)
+    project_root = Path(__file__).parent.parent
+    template_dir = project_root / 'templates' / 'web'
+    static_dir = project_root / 'static'
+    
+    app = Flask(__name__,
+                template_folder=str(template_dir),
+                static_folder=str(static_dir))
     
     # Default configuration
     app.config.update(

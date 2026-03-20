@@ -107,10 +107,19 @@ python3 examples/simple_pdf_example.py
 
 ### 4. Run the Web Application
 
+**On macOS (requires helper script for WeasyPrint):**
 ```bash
 # Start the Flask web server
 source venv/bin/activate
-python3 web/app.py
+./run_with_libs.sh python3 -m flask --app web.app run
+
+# Open browser to http://localhost:5000
+```
+
+**On Linux:**
+```bash
+source venv/bin/activate
+python3 -m flask --app web.app run
 
 # Open browser to http://localhost:5000
 ```
