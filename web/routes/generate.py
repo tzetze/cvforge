@@ -117,7 +117,7 @@ def analyze():
             'preferred_skills': job_info.preferred_skills,
             'keywords': job_info.keywords
         }
-        session['match_score'] = selected_content.job_match_summary.get('overall_match', 0)
+        session['match_score'] = selected_content.job_match_summary['overall_match'] if selected_content.job_match_summary else 0
         
         return render_template(
             'generate/analyze.html',
