@@ -108,8 +108,7 @@ def analyze():
         
         selected_content = selector.select_content(
             cv_data=cv_data,
-            job_requirements=job_info.required_skills,
-            top_n=15
+            job_requirements=job_info
         )
         
         # Store in session
@@ -118,7 +117,7 @@ def analyze():
             'preferred_skills': job_info.preferred_skills,
             'keywords': job_info.keywords
         }
-        session['match_score'] = selected_content.match_summary.get('overall_match', 0)
+        session['match_score'] = selected_content.job_match_summary.get('overall_match', 0)
         
         return render_template(
             'generate/analyze.html',
@@ -194,8 +193,7 @@ def preview():
         
         selected_content = selector.select_content(
             cv_data=cv_data,
-            job_requirements=job_info.required_skills,
-            top_n=15
+            job_requirements=job_info
         )
         
         # Tailor if requested
@@ -222,10 +220,10 @@ def preview():
                 logger.error(f"Error tailoring CV: {e}")
                 flash(f'LLM tailoring failed, using selected content: {str(e)}', 'warning')
                 summary = cv_data.summary
-                experiences = selected_content.experience
+                experiences = selected_content.experiences
         else:
             summary = cv_data.summary
-            experiences = selected_content.experience
+            experiences = selected_content.experiences
         
         return render_template(
             'generate/preview.html',
@@ -266,8 +264,7 @@ def download():
         
         selected_content = selector.select_content(
             cv_data=cv_data,
-            job_requirements=job_info.required_skills,
-            top_n=15
+            job_requirements=job_info
         )
         
         # Tailor if requested
@@ -290,10 +287,10 @@ def download():
                 experiences = tailored_cv.experience
             except:
                 summary = cv_data.summary
-                experiences = selected_content.experience
+                experiences = selected_content.experiences
         else:
             summary = cv_data.summary
-            experiences = selected_content.experience
+            experiences = selected_content.experiences
         
         # Generate PDF
         generator = PDFGenerator()
