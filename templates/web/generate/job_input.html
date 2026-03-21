@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Job Input - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Input Job Description</h2>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-4" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual"
+                            type="button" role="tab">
+                            <i class="bi bi-pencil"></i> Manual Input
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="linkedin-tab" data-bs-toggle="tab" data-bs-target="#linkedin"
+                            type="button" role="tab">
+                            <i class="bi bi-linkedin"></i> LinkedIn URL
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Manual Input Tab -->
+                    <div class="tab-pane fade show active" id="manual" role="tabpanel">
+                        <form method="POST" action="{{ url_for('generate.job_input') }}">
+                            <input type="hidden" name="input_type" value="manual">
+
+                            <div class="mb-3">
+                                <label for="job_description" class="form-label">Job Description</label>
+                                <textarea class="form-control" id="job_description" name="job_description" rows="15"
+                                    required placeholder="Paste the complete job description here..."></textarea>
+                                <div class="form-text">Include job title, requirements, responsibilities, and
+                                    qualifications.</div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right"></i> Analyze Job
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- LinkedIn URL Tab -->
+                    <div class="tab-pane fade" id="linkedin" role="tabpanel">
+                        <form method="POST" action="{{ url_for('generate.job_input') }}">
+                            <input type="hidden" name="input_type" value="linkedin">
+
+                            <div class="mb-3">
+                                <label for="linkedin_url" class="form-label">LinkedIn Job URL</label>
+                                <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" required
+                                    placeholder="https://www.linkedin.com/jobs/view/...">
+                                <div class="form-text">Paste the full LinkedIn job posting URL.</div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i> <strong>Note:</strong> LinkedIn scraping may require
+                                authentication and can be rate-limited. Manual input is more reliable.
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Scrape & Analyze
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="{{ url_for('generate.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

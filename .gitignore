@@ -62,3 +62,8 @@ config/backups/
 # Temporary files
 tmp/
 temp/
+
+# Flask session files
+flask_session/
+uploads/
+output/

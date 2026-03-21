@@ -44,6 +44,8 @@ def job_input():
             # Store in session
             session['job_description'] = job_description
             session['job_source'] = 'manual'
+            logger.info(f"Stored job description in session (length: {len(job_description)})")
+            logger.info(f"Session data: {dict(session)}")
             
             flash('Job description saved', 'success')
             return redirect(url_for('generate.analyze'))
@@ -83,7 +85,10 @@ def analyze():
     """Analyze job requirements and show match score."""
     try:
         # Get job description from session
+        logger.info(f"Analyze route - Session keys: {list(session.keys())}")
+        logger.info(f"Analyze route - Full session: {dict(session)}")
         job_description = session.get('job_description')
+        logger.info(f"Retrieved job_description: {job_description[:100] if job_description else 'None'}...")
         
         if not job_description:
             flash('No job description found. Please input a job first.', 'warning')

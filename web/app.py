@@ -8,6 +8,7 @@ import os
 import logging
 from pathlib import Path
 from flask import Flask, render_template, redirect, url_for
+from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Configure logging
@@ -45,6 +46,11 @@ def create_app(config=None):
         OUTPUT_FOLDER=Path('output'),
         CV_DATA_PATH=Path('config/cv_data.yaml'),
         SETTINGS_PATH=Path('config/settings.yaml'),
+        # Server-side session configuration
+        SESSION_TYPE='filesystem',
+        SESSION_FILE_DIR=Path('flask_session'),
+        SESSION_PERMANENT=False,
+        SESSION_USE_SIGNER=True,
     )
     
     # Override with custom config
@@ -54,6 +60,10 @@ def create_app(config=None):
     # Ensure directories exist
     app.config['UPLOAD_FOLDER'].mkdir(exist_ok=True)
     app.config['OUTPUT_FOLDER'].mkdir(exist_ok=True)
+    app.config['SESSION_FILE_DIR'].mkdir(exist_ok=True)
+    
+    # Initialize server-side sessions
+    Session(app)
     
     # Proxy fix for deployment behind reverse proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
