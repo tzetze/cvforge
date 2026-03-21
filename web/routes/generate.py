@@ -117,7 +117,15 @@ def analyze():
             'preferred_skills': job_info.preferred_skills,
             'keywords': job_info.keywords
         }
-        session['match_score'] = selected_content.job_match_summary['overall_match'] if selected_content.job_match_summary else 0
+        # Calculate overall match from skill_match_rate and average_score
+        match_summary = selected_content.job_match_summary
+        if match_summary:
+            skill_match = match_summary.get('skill_match_rate', 0)
+            avg_score = match_summary.get('average_score', 0)
+            overall_match = (skill_match * 0.6 + avg_score * 0.4) * 100  # Weighted average as percentage
+        else:
+            overall_match = 0
+        session['match_score'] = overall_match
         
         return render_template(
             'generate/analyze.html',
