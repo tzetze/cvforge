@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Education - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Education</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-mortarboard-fill"></i> Education</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cv_data.edit_education') }}" data-validate="true">
+                    <div id="education-container">
+                        {% if cv_data.education %}
+                        {% for edu in cv_data.education %}
+                        <div class="education-item card mb-4">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Education #{{ loop.index }}</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="CVFormManager.removeItem(this, 'education-item')">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][institution]"
+                                            value="{{ edu.institution }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Degree <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][degree]" value="{{ edu.degree }}"
+                                            placeholder="e.g., Bachelor of Science" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Field of Study</label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][field]" value="{{ edu.field or '' }}"
+                                            placeholder="e.g., Computer Science">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Location</label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][location]"
+                                            value="{{ edu.location or '' }}" placeholder="e.g., Berkeley, CA">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][start_date]"
+                                            value="{{ edu.start_date or '' }}" placeholder="YYYY or YYYY-MM"
+                                            pattern="(\d{4}|\d{4}-\d{2})">
+                                        <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Graduation Date</label>
+                                        <input type="text" class="form-control"
+                                            name="education[{{ loop.index0 }}][graduation_date]"
+                                            value="{{ edu.graduation_date or '' }}" placeholder="YYYY or YYYY-MM"
+                                            pattern="(\d{4}|\d{4}-\d{2})">
+                                        <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" name="education[{{ loop.index0 }}][status]">
+                                            <option value="">Not specified</option>
+                                            <option value="completed" {% if edu.status=='completed' %}selected{% endif
+                                                %}>Completed</option>
+                                            <option value="in-progress" {% if edu.status=='in-progress' %}selected{%
+                                                endif %}>In Progress</option>
+                                            <option value="incomplete" {% if edu.status=='incomplete' %}selected{% endif
+                                                %}>Incomplete</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">GPA</label>
+                                        <input type="text" class="form-control" name="education[{{ loop.index0 }}][gpa]"
+                                            value="{{ edu.gpa or '' }}" placeholder="e.g., 3.7/4.0">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Honors & Awards</label>
+                                    <input type="text" class="form-control" name="education[{{ loop.index0 }}][honors]"
+                                        value="{% if edu.honors %}{{ edu.honors|join(', ') }}{% endif %}"
+                                        placeholder="Dean's List, Scholarship, etc. (comma-separated)">
+                                    <small class="form-text text-muted">Comma-separated list</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Relevant Coursework</label>
+                                    <input type="text" class="form-control"
+                                        name="education[{{ loop.index0 }}][relevant_coursework]"
+                                        value="{% if edu.relevant_coursework %}{{ edu.relevant_coursework|join(', ') }}{% endif %}"
+                                        placeholder="Data Structures, Algorithms, etc. (comma-separated)">
+                                    <small class="form-text text-muted">Comma-separated list</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="education-item card mb-4">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Education #1</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="CVFormManager.removeItem(this, 'education-item')">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Institution <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="education[0][institution]"
+                                            required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Degree <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="education[0][degree]"
+                                            placeholder="e.g., Bachelor of Science" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Field of Study</label>
+                                        <input type="text" class="form-control" name="education[0][field]"
+                                            placeholder="e.g., Computer Science">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Location</label>
+                                        <input type="text" class="form-control" name="education[0][location]"
+                                            placeholder="e.g., Berkeley, CA">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Start Date</label>
+                                        <input type="text" class="form-control" name="education[0][start_date]"
+                                            placeholder="YYYY or YYYY-MM" pattern="(\d{4}|\d{4}-\d{2})">
+                                        <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Graduation Date</label>
+                                        <input type="text" class="form-control" name="education[0][graduation_date]"
+                                            placeholder="YYYY or YYYY-MM" pattern="(\d{4}|\d{4}-\d{2})">
+                                        <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Status</label>
+                                        <select class="form-select" name="education[0][status]">
+                                            <option value="">Not specified</option>
+                                            <option value="completed" selected>Completed</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="incomplete">Incomplete</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">GPA</label>
+                                        <input type="text" class="form-control" name="education[0][gpa]"
+                                            placeholder="e.g., 3.7/4.0">
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Honors & Awards</label>
+                                    <input type="text" class="form-control" name="education[0][honors]"
+                                        placeholder="Dean's List, Scholarship, etc. (comma-separated)">
+                                    <small class="form-text text-muted">Comma-separated list</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Relevant Coursework</label>
+                                    <input type="text" class="form-control" name="education[0][relevant_coursework]"
+                                        placeholder="Data Structures, Algorithms, etc. (comma-separated)">
+                                    <small class="form-text text-muted">Comma-separated list</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <button type="button" class="btn btn-success"
+                            onclick="CVFormManager.addItem('education-container', 'education-template', 'education-item')">
+                            <i class="bi bi-plus-circle"></i> Add Education
+                        </button>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template for new education entry -->
+<template id="education-template">
+    <div class="education-item card mb-4">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">New Education</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                    onclick="CVFormManager.removeItem(this, 'education-item')">
+                    <i class="bi bi-trash"></i> Remove
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Institution <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="education[{INDEX}][institution]" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Degree <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="education[{INDEX}][degree]"
+                        placeholder="e.g., Bachelor of Science" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Field of Study</label>
+                    <input type="text" class="form-control" name="education[{INDEX}][field]"
+                        placeholder="e.g., Computer Science">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-control" name="education[{INDEX}][location]"
+                        placeholder="e.g., Berkeley, CA">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="text" class="form-control" name="education[{INDEX}][start_date]"
+                        placeholder="YYYY or YYYY-MM" pattern="(\d{4}|\d{4}-\d{2})">
+                    <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Graduation Date</label>
+                    <input type="text" class="form-control" name="education[{INDEX}][graduation_date]"
+                        placeholder="YYYY or YYYY-MM" pattern="(\d{4}|\d{4}-\d{2})">
+                    <small class="form-text text-muted">YYYY or YYYY-MM</small>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" name="education[{INDEX}][status]">
+                        <option value="">Not specified</option>
+                        <option value="completed" selected>Completed</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="incomplete">Incomplete</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">GPA</label>
+                    <input type="text" class="form-control" name="education[{INDEX}][gpa]" placeholder="e.g., 3.7/4.0">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Honors & Awards</label>
+                <input type="text" class="form-control" name="education[{INDEX}][honors]"
+                    placeholder="Dean's List, Scholarship, etc. (comma-separated)">
+                <small class="form-text text-muted">Comma-separated list</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Relevant Coursework</label>
+                <input type="text" class="form-control" name="education[{INDEX}][relevant_coursework]"
+                    placeholder="Data Structures, Algorithms, etc. (comma-separated)">
+                <small class="form-text text-muted">Comma-separated list</small>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
+{% endblock %}

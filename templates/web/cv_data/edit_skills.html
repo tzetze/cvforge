@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Skills - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Skills</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-code-slash"></i> Skills</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cv_data.edit_skills') }}" data-validate="true">
+
+                    <!-- Technical Skills Section -->
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="bi bi-laptop"></i> Technical Skills</h5>
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                onclick="CVFormManager.addItem('technical-skills-container', 'technical-skill-template', 'technical-skill-item')">
+                                <i class="bi bi-plus-circle"></i> Add Technical Skill
+                            </button>
+                        </div>
+
+                        <div id="technical-skills-container">
+                            {% if cv_data.skills and cv_data.skills.technical %}
+                            {% for skill in cv_data.skills.technical %}
+                            <div class="technical-skill-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Skill/Technology <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                name="technical[{{ loop.index0 }}][name]" value="{{ skill.name }}"
+                                                required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Proficiency Level</label>
+                                            <select class="form-select" name="technical[{{ loop.index0 }}][level]">
+                                                <option value="">Not specified</option>
+                                                <option value="expert" {% if skill.level=='expert' %}selected{% endif
+                                                    %}>Expert</option>
+                                                <option value="advanced" {% if skill.level=='advanced' %}selected{%
+                                                    endif %}>Advanced</option>
+                                                <option value="intermediate" {% if skill.level=='intermediate'
+                                                    %}selected{% endif %}>Intermediate</option>
+                                                <option value="beginner" {% if skill.level=='beginner' %}selected{%
+                                                    endif %}>Beginner</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Years of Experience</label>
+                                            <input type="number" class="form-control"
+                                                name="technical[{{ loop.index0 }}][years]"
+                                                value="{{ skill.years or '' }}" min="0" max="50">
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                onclick="CVFormManager.removeItem(this, 'technical-skill-item')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="technical-skill-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Skill/Technology <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="technical[0][name]" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Proficiency Level</label>
+                                            <select class="form-select" name="technical[0][level]">
+                                                <option value="">Not specified</option>
+                                                <option value="expert">Expert</option>
+                                                <option value="advanced">Advanced</option>
+                                                <option value="intermediate" selected>Intermediate</option>
+                                                <option value="beginner">Beginner</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label">Years of Experience</label>
+                                            <input type="number" class="form-control" name="technical[0][years]" min="0"
+                                                max="50">
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                onclick="CVFormManager.removeItem(this, 'technical-skill-item')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Soft Skills Section -->
+                    <div class="mb-5">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="bi bi-people"></i> Soft Skills</h5>
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                onclick="CVFormManager.addTextField(this, 'soft-skills-list', 'soft', 'e.g., Leadership')">
+                                <i class="bi bi-plus-circle"></i> Add Soft Skill
+                            </button>
+                        </div>
+
+                        <div class="soft-skills-list mb-2">
+                            {% if cv_data.skills and cv_data.skills.soft %}
+                            {% for skill in cv_data.skills.soft %}
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="soft[{{ loop.index0 }}]"
+                                    value="{{ skill }}" placeholder="e.g., Leadership" required>
+                                <button type="button" class="btn btn-outline-danger"
+                                    onclick="this.parentElement.remove()">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="soft[0]" placeholder="e.g., Leadership"
+                                    required>
+                                <button type="button" class="btn btn-outline-danger"
+                                    onclick="this.parentElement.remove()">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Languages Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="bi bi-translate"></i> Languages</h5>
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                onclick="CVFormManager.addItem('languages-container', 'language-template', 'language-item')">
+                                <i class="bi bi-plus-circle"></i> Add Language
+                            </button>
+                        </div>
+
+                        <div id="languages-container">
+                            {% if cv_data.skills and cv_data.skills.languages %}
+                            {% for lang in cv_data.skills.languages %}
+                            <div class="language-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Language <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                name="languages[{{ loop.index0 }}][language]"
+                                                value="{{ lang.language }}" placeholder="e.g., English" required>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label">Proficiency <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                name="languages[{{ loop.index0 }}][proficiency]"
+                                                value="{{ lang.proficiency }}"
+                                                placeholder="e.g., Native, Fluent, Professional" required>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                onclick="CVFormManager.removeItem(this, 'language-item')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="language-item card mb-3">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5">
+                                            <label class="form-label">Language <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="languages[0][language]"
+                                                placeholder="e.g., English" required>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label">Proficiency <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="languages[0][proficiency]"
+                                                placeholder="e.g., Native, Fluent, Professional" required>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <button type="button" class="btn btn-outline-danger"
+                                                onclick="CVFormManager.removeItem(this, 'language-item')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Template for new technical skill -->
+<template id="technical-skill-template">
+    <div class="technical-skill-item card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label">Skill/Technology <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="technical[{INDEX}][name]" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Proficiency Level</label>
+                    <select class="form-select" name="technical[{INDEX}][level]">
+                        <option value="">Not specified</option>
+                        <option value="expert">Expert</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="intermediate" selected>Intermediate</option>
+                        <option value="beginner">Beginner</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Years of Experience</label>
+                    <input type="number" class="form-control" name="technical[{INDEX}][years]" min="0" max="50">
+                </div>
+                <div class="col-md-2 text-end">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-danger"
+                        onclick="CVFormManager.removeItem(this, 'technical-skill-item')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template for new language -->
+<template id="language-template">
+    <div class="language-item card mb-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-5">
+                    <label class="form-label">Language <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="languages[{INDEX}][language]"
+                        placeholder="e.g., English" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Proficiency <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="languages[{INDEX}][proficiency]"
+                        placeholder="e.g., Native, Fluent, Professional" required>
+                </div>
+                <div class="col-md-2 text-end">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-danger"
+                        onclick="CVFormManager.removeItem(this, 'language-item')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Personal Information - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Personal Information</h2>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-fill"></i> Personal Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cv_data.edit_personal_info') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name"
+                            value="{{ cv_data.personal.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email"
+                            value="{{ cv_data.personal.email }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="phone" name="phone"
+                            value="{{ cv_data.personal.phone or '' }}">
+                        <small class="form-text text-muted">Optional</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" class="form-control" id="location" name="location"
+                            value="{{ cv_data.personal.location or '' }}" placeholder="e.g., San Francisco, CA">
+                        <small class="form-text text-muted">Optional</small>
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="mb-3">Online Presence</h6>
+
+                    <div class="mb-3">
+                        <label for="linkedin" class="form-label">LinkedIn Profile</label>
+                        <input type="url" class="form-control" id="linkedin" name="linkedin"
+                            value="{{ cv_data.personal.linkedin or '' }}"
+                            placeholder="https://linkedin.com/in/yourprofile">
+                        <small class="form-text text-muted">Optional</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="github" class="form-label">GitHub Profile</label>
+                        <input type="url" class="form-control" id="github" name="github"
+                            value="{{ cv_data.personal.github or '' }}" placeholder="https://github.com/yourusername">
+                        <small class="form-text text-muted">Optional</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Personal Website</label>
+                        <input type="url" class="form-control" id="website" name="website"
+                            value="{{ cv_data.personal.website or '' }}" placeholder="https://yourwebsite.com">
+                        <small class="form-text text-muted">Optional</small>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
