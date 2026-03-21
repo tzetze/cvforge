@@ -139,25 +139,46 @@ class JobDescriptionParser:
         if not description:
             return requirements
         
+        # Clean description (remove benefits/legal sections)
+        cleaned_description = self._clean_description(description)
+        
         # Extract sections
         self._extract_sections(description, requirements)
         
-        # Extract skills
-        self._extract_skills(description, requirements)
+        # Extract skills from cleaned description
+        self._extract_skills(cleaned_description, requirements)
         
-        # Extract technologies
-        self._extract_technologies(description, requirements)
+        # Extract technologies from cleaned description
+        self._extract_technologies(cleaned_description, requirements)
         
-        # Extract action verbs
-        self._extract_action_verbs(description, requirements)
+        # Extract action verbs from cleaned description
+        self._extract_action_verbs(cleaned_description, requirements)
         
-        # Extract keywords
-        self._extract_keywords(description, requirements)
+        # Extract keywords from cleaned description
+        self._extract_keywords(cleaned_description, requirements)
         
-        # Extract years of experience
-        self._extract_years_experience(description, requirements)
+        # Extract years of experience from cleaned description
+        self._extract_years_experience(cleaned_description, requirements)
         
         return requirements
+    
+    def _clean_description(self, description: str) -> str:
+        """Remove benefits, legal, and other non-job-requirement sections."""
+        lines = description.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            line_lower = line.lower()
+            # Stop at benefits/legal sections
+            if any(keyword in line_lower for keyword in [
+                "additional information", "we take care", "benefits", "compensation",
+                "equal opportunity", "diversity", "applicants have rights",
+                "privacy statement", "salary range", "total rewards", "different people approach"
+            ]):
+                break
+            cleaned_lines.append(line)
+        
+        return '\n'.join(cleaned_lines)
     
     def _extract_sections(self, description: str, requirements: JobRequirements) -> None:
         """Extract different sections from job description."""
@@ -278,13 +299,20 @@ class JobDescriptionParser:
     
     def _extract_keywords(self, description: str, requirements: JobRequirements) -> None:
         """Extract important keywords."""
-        # Remove common words
+        # Expanded stop words list
         stop_words = {
             "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
             "of", "with", "by", "from", "as", "is", "was", "are", "were", "be",
             "been", "being", "have", "has", "had", "do", "does", "did", "will",
             "would", "should", "could", "may", "might", "must", "can", "this",
             "that", "these", "those", "i", "you", "he", "she", "it", "we", "they",
+            "our", "your", "their", "all", "any", "each", "every", "some", "many",
+            "more", "most", "other", "such", "only", "own", "same", "than", "too",
+            "very", "just", "where", "when", "who", "what", "which", "how", "why",
+            "about", "into", "through", "during", "before", "after", "above", "below",
+            "between", "under", "again", "further", "then", "once", "here", "there",
+            "whether", "both", "few", "more", "most", "other", "some", "such", "not",
+            "only", "own", "same", "so", "than", "too", "very", "can", "will", "just"
         }
         
         # Extract words
@@ -296,9 +324,10 @@ class JobDescriptionParser:
             if word not in stop_words:
                 word_freq[word] = word_freq.get(word, 0) + 1
         
-        # Get top keywords (appearing more than once)
-        for word, freq in word_freq.items():
-            if freq > 1:
+        # Get top keywords (appearing 2+ times, limit to top 50 by frequency)
+        sorted_keywords = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
+        for word, freq in sorted_keywords[:50]:
+            if freq >= 2:
                 requirements.keywords.add(word)
     
     def _extract_years_experience(self, description: str, requirements: JobRequirements) -> None:
