@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Tailoring - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">LLM Tailoring Options</h2>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-magic"></i> AI-Powered Content Enhancement</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Would you like to use AI to enhance your CV content for this specific job?
+                </p>
+
+                {% if not llm_configured %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>LLM Not Configured</strong><br>
+                    No LLM provider is configured in your settings. You can still generate a CV with the selected
+                    content,
+                    but AI-powered tailoring will not be available.
+                    <br><br>
+                    To enable LLM tailoring, configure an LLM provider in <code>config/settings.yaml</code>.
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    <div class="mb-4">
+                        <h6>What LLM Tailoring Does:</h6>
+                        <ul>
+                            <li><strong>Rewrites achievements</strong> to better match job requirements</li>
+                            <li><strong>Emphasizes relevant skills</strong> mentioned in the job description</li>
+                            <li><strong>Adjusts tone and language</strong> to match company culture</li>
+                            <li><strong>Optimizes for ATS</strong> by incorporating key terms</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6>Choose Your Option:</h6>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="use_tailoring" id="tailorYes" value="yes"
+                                {% if llm_configured %}checked{% else %}disabled{% endif %}>
+                            <label class="form-check-label" for="tailorYes">
+                                <strong>Use AI Tailoring</strong> - Enhance content with LLM
+                                {% if not llm_configured %}
+                                <span class="badge bg-secondary">Unavailable</span>
+                                {% else %}
+                                <span class="badge bg-success">Recommended</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="use_tailoring" id="tailorNo" value="no"
+                                {% if not llm_configured %}checked{% endif %}>
+                            <label class="form-check-label" for="tailorNo">
+                                <strong>Skip AI Tailoring</strong> - Use selected content as-is
+                            </label>
+                        </div>
+                    </div>
+
+                    {% if llm_configured %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> AI tailoring may take 30-60 seconds depending on your LLM provider.
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <a href="{{ url_for('generate.analyze') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Analysis
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Continue to Preview <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
