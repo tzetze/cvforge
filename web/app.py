@@ -10,6 +10,10 @@ from pathlib import Path
 from flask import Flask, render_template, redirect, url_for
 from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(

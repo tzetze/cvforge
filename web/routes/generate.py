@@ -160,8 +160,13 @@ def tailor():
             settings_path = current_app.config['SETTINGS_PATH']
             with open(settings_path) as f:
                 settings = yaml.safe_load(f)
-            llm_configured = bool(settings.get('llm_providers'))
-        except:
+            # Check if llm.providers exists and has at least one provider configured
+            llm_config = settings.get('llm', {})
+            providers = llm_config.get('providers', {})
+            llm_configured = bool(providers)
+            logger.info(f"LLM configuration check: {len(providers)} providers found")
+        except Exception as e:
+            logger.error(f"Error checking LLM configuration: {e}")
             llm_configured = False
         
         return render_template(
