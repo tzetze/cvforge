@@ -57,13 +57,13 @@ def edit_personal_info():
         
         if request.method == 'POST':
             # Update personal info
-            cv_data.personal_info.name = request.form.get('name', '')
-            cv_data.personal_info.email = request.form.get('email', '')
-            cv_data.personal_info.phone = request.form.get('phone', '')
-            cv_data.personal_info.location = request.form.get('location', '')
-            cv_data.personal_info.linkedin = request.form.get('linkedin', '')
-            cv_data.personal_info.github = request.form.get('github', '')
-            cv_data.personal_info.website = request.form.get('website', '')
+            cv_data.personal.name = request.form.get('name', '')
+            cv_data.personal.email = request.form.get('email', '')
+            cv_data.personal.phone = request.form.get('phone', '')
+            cv_data.personal.location = request.form.get('location', '')
+            cv_data.personal.linkedin = request.form.get('linkedin', '')
+            cv_data.personal.github = request.form.get('github', '')
+            cv_data.personal.website = request.form.get('website', '')
             
             # Save
             save_cv_data(cv_data, str(cv_data_path))
@@ -142,9 +142,9 @@ def api_stats():
         cv_data = load_cv_data(str(cv_data_path))
         
         stats = {
-            'experiences': len(cv_data.experiences),
-            'achievements': sum(len(exp.achievements) for exp in cv_data.experiences),
-            'skills': len(cv_data.skills.technical) if cv_data.skills else 0,
+            'experiences': len(cv_data.experience),
+            'achievements': sum(len(exp.achievements) for exp in cv_data.experience),
+            'skills': len(cv_data.skills.technical) if cv_data.skills and cv_data.skills.technical else 0,
             'education': len(cv_data.education) if cv_data.education else 0,
         }
         

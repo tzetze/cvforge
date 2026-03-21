@@ -210,17 +210,17 @@ def preview():
                 )
                 
                 summary = tailored_cv.summary
-                experiences = tailored_cv.experiences
+                experiences = tailored_cv.experience
                 flash('CV content tailored with LLM', 'success')
             
             except Exception as e:
                 logger.error(f"Error tailoring CV: {e}")
                 flash(f'LLM tailoring failed, using selected content: {str(e)}', 'warning')
                 summary = cv_data.summary
-                experiences = selected_content.experiences
+                experiences = selected_content.experience
         else:
             summary = cv_data.summary
-            experiences = selected_content.experiences
+            experiences = selected_content.experience
         
         return render_template(
             'generate/preview.html',
@@ -282,23 +282,23 @@ def download():
                 )
                 
                 summary = tailored_cv.summary
-                experiences = tailored_cv.experiences
+                experiences = tailored_cv.experience
             except:
                 summary = cv_data.summary
-                experiences = selected_content.experiences
+                experiences = selected_content.experience
         else:
             summary = cv_data.summary
-            experiences = selected_content.experiences
+            experiences = selected_content.experience
         
         # Generate PDF
         generator = PDFGenerator()
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        name_slug = cv_data.personal_info.name.lower().replace(" ", "_")
+        name_slug = cv_data.personal.name.lower().replace(" ", "_")
         output_path = current_app.config['OUTPUT_FOLDER'] / f"{name_slug}_cv_{timestamp}.pdf"
         
         generator.generate_pdf_from_selected_content(
-            personal_info=cv_data.personal_info.model_dump(),
+            personal_info=cv_data.personal.model_dump(),
             summary=summary,
             experiences=experiences,
             skills=cv_data.skills.model_dump() if cv_data.skills else None,

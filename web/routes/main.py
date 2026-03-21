@@ -42,9 +42,9 @@ def dashboard():
         
         # Calculate stats
         stats = {
-            'total_experiences': len(cv_data.experiences),
-            'total_achievements': sum(len(exp.achievements) for exp in cv_data.experiences),
-            'technical_skills': len(cv_data.skills.technical) if cv_data.skills else 0,
+            'total_experiences': len(cv_data.experience),
+            'total_achievements': sum(len(exp.achievements) for exp in cv_data.experience),
+            'technical_skills': len(cv_data.skills.technical) if cv_data.skills and cv_data.skills.technical else 0,
             'education_entries': len(cv_data.education) if cv_data.education else 0,
             'certifications': len(cv_data.certifications) if cv_data.certifications else 0,
             'projects': len(cv_data.projects) if cv_data.projects else 0,

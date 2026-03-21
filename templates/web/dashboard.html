@@ -129,8 +129,8 @@
                 <h5 class="mb-0"><i class="bi bi-clock-history"></i> CV Overview</h5>
             </div>
             <div class="card-body">
-                <h6>{{ cv_data.personal_info.name }}</h6>
-                <p class="text-muted">{{ cv_data.personal_info.email }}</p>
+                <h6>{{ cv_data.personal.name }}</h6>
+                <p class="text-muted">{{ cv_data.personal.email }}</p>
 
                 {% if cv_data.summary %}
                 <div class="mt-3">
@@ -142,10 +142,10 @@
 
                 <div class="mt-3">
                     <strong>Recent Experience:</strong>
-                    {% if cv_data.experiences %}
+                    {% if cv_data.experience %}
                     <p class="text-muted">
-                        {{ cv_data.experiences[0].position }} at {{ cv_data.experiences[0].company }}
-                        ({{ cv_data.experiences[0].start_date }} - {{ cv_data.experiences[0].end_date or 'Present' }})
+                        {{ cv_data.experience[0].position }} at {{ cv_data.experience[0].company }}
+                        ({{ cv_data.experience[0].start_date }} - {{ cv_data.experience[0].end_date or 'Present' }})
                     </p>
                     {% else %}
                     <p class="text-muted">No experiences added yet.</p>
