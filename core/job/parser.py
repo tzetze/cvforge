@@ -176,7 +176,18 @@ class JobDescriptionParser:
             # Check for section headers
             line_lower = line.lower()
             
-            if any(keyword in line_lower for keyword in ["responsibilities", "what you'll do", "role"]):
+            # Skip non-job-requirement sections (benefits, legal, etc.)
+            if any(keyword in line_lower for keyword in [
+                "additional information", "we take care", "benefits", "compensation",
+                "equal opportunity", "diversity", "applicants have rights",
+                "privacy statement", "salary range", "total rewards"
+            ]):
+                # Save current section and stop processing
+                if current_section and section_content:
+                    self._save_section(current_section, section_content, requirements)
+                current_section = None
+                section_content = []
+            elif any(keyword in line_lower for keyword in ["responsibilities", "what you'll do", "role"]):
                 if current_section and section_content:
                     self._save_section(current_section, section_content, requirements)
                 current_section = "responsibilities"
