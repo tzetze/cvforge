@@ -219,9 +219,13 @@ class JobDescriptionParser:
         elif section == "qualifications":
             requirements.qualifications.extend(content)
         elif section == "required_skills":
-            requirements.required_skills.extend(content)
+            # Filter out long sentences, keep only actual skills (< 100 chars)
+            skills = [item for item in content if len(item) < 100]
+            requirements.required_skills.extend(skills)
         elif section == "preferred_skills":
-            requirements.preferred_skills.extend(content)
+            # Filter out long sentences, keep only actual skills (< 100 chars)
+            skills = [item for item in content if len(item) < 100]
+            requirements.preferred_skills.extend(skills)
     
     def _extract_skills(self, description: str, requirements: JobRequirements) -> None:
         """Extract skills from description."""
