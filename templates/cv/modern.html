@@ -22,7 +22,8 @@
             color: #2c3e50;
             max-width: 8.5in;
             margin: 0 auto;
-            padding: 0.75in;
+            padding: 0.375in;
+            /* Reduced from 0.75in to half */
         }
 
         /* Typography */
@@ -204,7 +205,7 @@
         /* Print styles */
         @media print {
             body {
-                padding: 0.5in;
+                padding: 0.375in;
             }
 
             .page-break {
@@ -215,7 +216,7 @@
         /* Ensure ATS compatibility */
         @page {
             size: letter;
-            margin: 0.75in;
+            margin: 0.375in;
         }
     </style>
 </head>
@@ -275,7 +276,8 @@
             <div class="skill-category-title">Technical Skills</div>
             <div class="skill-list">
                 {% for skill in skills.technical %}
-                <span class="skill-item">{{ skill.name }}{% if skill.level %} ({{ skill.level }}){% endif %}</span>
+                <span class="skill-item">{{ skill.name }}{% if skill.level %} ({{ skill.level.value.capitalize() }}){%
+                    endif %}</span>
                 {% endfor %}
             </div>
         </div>
@@ -298,7 +300,8 @@
         <div class="skill-category-title">Languages</div>
         <div class="skill-list">
             {% for lang in skills.languages %}
-            <span class="skill-item">{{ lang.language }} ({{ lang.proficiency }})</span>
+            <span class="skill-item">{{ lang.language }} ({{ lang.proficiency.value.capitalize() if lang.proficiency is
+                not string else lang.proficiency }})</span>
             {% endfor %}
         </div>
     </div>

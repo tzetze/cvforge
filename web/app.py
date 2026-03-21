@@ -69,6 +69,18 @@ def create_app(config=None):
     # Initialize server-side sessions
     Session(app)
     
+    # Register custom Jinja2 filters
+    @app.template_filter('format_enum')
+    def format_enum_filter(value):
+        """Format enum values for display (e.g., SkillLevel.EXPERT -> Expert)."""
+        if value is None:
+            return ''
+        if hasattr(value, 'value'):
+            # It's an enum, get the value and capitalize
+            return value.value.capitalize()
+        # It's already a string
+        return str(value).capitalize()
+    
     # Proxy fix for deployment behind reverse proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     

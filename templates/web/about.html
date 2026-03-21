@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}About - CVForge{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2 class="mb-4">About CVForge</h2>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> What is CVForge?</h5>
+                <p class="card-text">
+                    CVForge is an intelligent CV generation system that helps you create tailored,
+                    ATS-compliant resumes for specific job applications. Using AI-powered content
+                    selection and rewriting, CVForge analyzes job descriptions and automatically
+                    highlights your most relevant experience and skills.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-star"></i> Key Features</h5>
+                <ul>
+                    <li><strong>Intelligent Content Selection:</strong> Automatically selects the most relevant
+                        achievements based on job requirements</li>
+                    <li><strong>AI-Powered Tailoring:</strong> Rewrites content to match job descriptions while
+                        maintaining authenticity</li>
+                    <li><strong>Job Description Analysis:</strong> Extracts key requirements, skills, and keywords from
+                        job postings</li>
+                    <li><strong>LinkedIn Integration:</strong> Fetch job descriptions directly from LinkedIn URLs</li>
+                    <li><strong>ATS-Compliant PDFs:</strong> Generates professional, ATS-friendly PDF resumes</li>
+                    <li><strong>Achievement Memory Helper:</strong> Interactive tool to help recall and document past
+                        accomplishments</li>
+                    <li><strong>CV Validation:</strong> Checks data completeness and quality</li>
+                    <li><strong>Multiple LLM Providers:</strong> Supports Claude API and local Ollama models</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-gear"></i> Technology Stack</h5>
+                <ul>
+                    <li><strong>Backend:</strong> Python, Flask</li>
+                    <li><strong>Data Validation:</strong> Pydantic V2</li>
+                    <li><strong>AI/LLM:</strong> Anthropic Claude API, Ollama</li>
+                    <li><strong>PDF Generation:</strong> WeasyPrint</li>
+                    <li><strong>Web Scraping:</strong> BeautifulSoup4, Selenium</li>
+                    <li><strong>Frontend:</strong> Bootstrap 5, Jinja2 templates</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-workflow"></i> How It Works</h5>
+                <ol>
+                    <li><strong>Store Your Data:</strong> Maintain a comprehensive YAML file with all your experience,
+                        skills, and achievements</li>
+                    <li><strong>Input Job Details:</strong> Paste a job description or provide a LinkedIn URL</li>
+                    <li><strong>AI Analysis:</strong> The system analyzes requirements and scores your achievements for
+                        relevance</li>
+                    <li><strong>Content Selection:</strong> Automatically selects the most impactful experiences and
+                        skills</li>
+                    <li><strong>Tailored Rewriting:</strong> AI rewrites content to align with the job while maintaining
+                        authenticity</li>
+                    <li><strong>Preview & Refine:</strong> Review the tailored CV and make adjustments if needed</li>
+                    <li><strong>Generate PDF:</strong> Download a professional, ATS-compliant PDF resume</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-shield-check"></i> Privacy & Data</h5>
+                <p class="card-text">
+                    Your CV data is stored locally in YAML format. When using AI features, content is sent to
+                    the configured LLM provider (Claude API or local Ollama). No data is stored on external
+                    servers beyond the LLM API calls. You maintain full control over your data.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-github"></i> Open Source</h5>
+                <p class="card-text">
+                    CVForge is open source software. Contributions, bug reports, and feature requests are welcome!
+                </p>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

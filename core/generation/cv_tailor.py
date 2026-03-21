@@ -145,15 +145,18 @@ Job Requirements:
 - Key Skills: {matched_skills}
 - Seniority: {job_requirements.seniority_level or 'Not specified'}
 
-Instructions:
-1. Keep the summary truthful and authentic
-2. Emphasize skills and experiences relevant to this role
-3. Use keywords from the job description naturally
-4. Keep it concise (2-3 sentences, max {self.max_summary_length} words)
-5. Maintain professional tone
-6. Do NOT add false information or exaggerate
+CRITICAL INSTRUCTIONS:
+- Output ONLY the rewritten summary text
+- Do NOT include explanations, notes, or commentary
+- Do NOT use phrases like "Rewritten Summary:", "Note:", etc.
+- Keep the summary truthful and authentic
+- Emphasize skills and experiences relevant to this role
+- Use keywords from the job description naturally
+- Keep it concise (2-3 sentences, max {self.max_summary_length} words)
+- Maintain professional tone
+- Do NOT add false information or exaggerate
 
-Rewritten Summary:"""
+Output the rewritten summary text only:"""
         
         try:
             response = self.llm.generate(
@@ -163,6 +166,9 @@ Rewritten Summary:"""
             )
             
             tailored = response.content.strip()
+            
+            # Clean up any commentary or formatting
+            tailored = self._clean_llm_response(tailored)
             
             # Fallback to original if response is too short or seems invalid
             if len(tailored) < 50 or not tailored:
@@ -282,16 +288,19 @@ Achievement Skills: {", ".join(skills)}
 Job Requirements: {", ".join(job_skills[:5])}
 Matching Skills: {", ".join(matching_skills) if matching_skills else "None"}
 
-Instructions:
-1. Keep the core accomplishment truthful and accurate
-2. Emphasize skills relevant to the target role
-3. Use action verbs and quantifiable results
-4. Incorporate relevant keywords naturally
-5. Keep it concise (1-2 sentences)
-6. Do NOT add false metrics or exaggerate
-7. Maintain the same level of impact
+CRITICAL INSTRUCTIONS:
+- Output ONLY the rewritten achievement text
+- Do NOT include explanations, notes, or commentary
+- Do NOT use phrases like "Rewritten Achievement:", "Key Changes:", "Note:", etc.
+- Keep the core accomplishment truthful and accurate
+- Emphasize skills relevant to the target role
+- Use action verbs and quantifiable results
+- Incorporate relevant keywords naturally
+- Keep it concise (1-2 sentences)
+- Do NOT add false metrics or exaggerate
+- Maintain the same level of impact
 
-Rewritten Achievement:"""
+Output the rewritten achievement text only:"""
         
         try:
             response = self.llm.generate(
@@ -301,6 +310,9 @@ Rewritten Achievement:"""
             )
             
             tailored = response.content.strip()
+            
+            # Clean up any commentary or formatting that Claude might add
+            tailored = self._clean_llm_response(tailored)
             
             # Fallback to original if response seems invalid
             if len(tailored) < 20 or not tailored:
@@ -312,6 +324,43 @@ Rewritten Achievement:"""
             # Fallback to original on error
             print(f"Warning: Failed to tailor achievement: {e}")
             return original_text
+    
+    def _clean_llm_response(self, text: str) -> str:
+        """Clean up LLM response to extract just the achievement text."""
+        import re
+        
+        # Remove common prefixes
+        prefixes_to_remove = [
+            r'^Rewritten Achievement:\s*',
+            r'^Achievement:\s*',
+            r'^\*\*Rewritten Achievement:\*\*\s*',
+            r'^\*\*Achievement:\*\*\s*',
+            r'^Here\'s the rewritten achievement:\s*',
+            r'^Here is the rewritten achievement:\s*',
+        ]
+        
+        for prefix in prefixes_to_remove:
+            text = re.sub(prefix, '', text, flags=re.IGNORECASE)
+        
+        # Split by common separators and take only the first part
+        separators = [
+            '\n\n---',
+            '\n\n**',
+            '\n\nKey Changes:',
+            '\n\nNote:',
+            '\n\n# ',
+            '\n\nChanges made:',
+            '\n\nAlternative version',
+        ]
+        
+        for separator in separators:
+            if separator in text:
+                text = text.split(separator)[0]
+        
+        # Remove any trailing asterisks or formatting
+        text = text.strip('*').strip()
+        
+        return text
     
     def tailor_cv_batch(
         self,

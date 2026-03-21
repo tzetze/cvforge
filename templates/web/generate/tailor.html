@@ -73,7 +73,7 @@
                         <a href="{{ url_for('generate.analyze') }}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Analysis
                         </a>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
                             Continue to Preview <i class="bi bi-arrow-right"></i>
                         </button>
                     </div>
@@ -82,4 +82,72 @@
         </div>
     </div>
 </div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; text-align: center;">
+        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 id="loadingTitle">Processing with AI...</h5>
+        <p id="loadingMessage" class="text-muted mb-3">Tailoring your CV content</p>
+        <div class="progress" style="height: 25px;">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <span id="progressText">0%</span>
+            </div>
+        </div>
+        <p class="text-muted small mt-2" id="progressDetail">Initializing...</p>
+    </div>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const useTailoring = document.querySelector('input[name="use_tailoring"]:checked').value;
+
+        if (useTailoring === 'yes') {
+            // Show loading overlay
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+
+            // Disable submit button
+            document.getElementById('submitBtn').disabled = true;
+
+            // Simulate progress (since we can't get real progress from synchronous request)
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressDetail = document.getElementById('progressDetail');
+
+            const messages = [
+                'Analyzing job requirements...',
+                'Matching your skills...',
+                'Tailoring achievements...',
+                'Optimizing content...',
+                'Finalizing CV...'
+            ];
+
+            let messageIndex = 0;
+
+            const interval = setInterval(function () {
+                progress += 2;
+                if (progress > 95) progress = 95; // Cap at 95% until actual completion
+
+                progressBar.style.width = progress + '%';
+                progressBar.setAttribute('aria-valuenow', progress);
+                progressText.textContent = progress + '%';
+
+                // Update message every 20%
+                if (progress % 20 === 0 && messageIndex < messages.length) {
+                    progressDetail.textContent = messages[messageIndex];
+                    messageIndex++;
+                }
+            }, 500); // Update every 500ms
+
+            // Store interval ID to clear it if needed
+            window.progressInterval = interval;
+        }
+    });
+</script>
 {% endblock %}

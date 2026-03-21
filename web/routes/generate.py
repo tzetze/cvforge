@@ -157,11 +157,12 @@ def tailor():
         
         # Check if LLM is configured
         try:
-            settings_path = current_app.config['SETTINGS_PATH']
-            with open(settings_path) as f:
-                settings = yaml.safe_load(f)
+            from core.data_manager import DataManager
+            data_manager = DataManager()
+            settings = data_manager.load_settings()
+            settings_dict = settings.model_dump()
             # Check if llm.providers exists and has at least one provider configured
-            llm_config = settings.get('llm', {})
+            llm_config = settings_dict.get('llm', {})
             providers = llm_config.get('providers', {})
             llm_configured = bool(providers)
             logger.info(f"LLM configuration check: {len(providers)} providers found")
@@ -212,11 +213,11 @@ def preview():
         # Tailor if requested
         if use_tailoring:
             try:
-                settings_path = current_app.config['SETTINGS_PATH']
-                with open(settings_path) as f:
-                    settings = yaml.safe_load(f)
+                from core.data_manager import DataManager
+                data_manager = DataManager()
+                settings = data_manager.load_settings()
                 
-                llm_manager = LLMManager(settings)
+                llm_manager = LLMManager(settings.model_dump())
                 llm = llm_manager.get_provider()  # Uses default provider from settings
                 
                 tailor = CVTailoringEngine(llm)
@@ -227,6 +228,11 @@ def preview():
                 
                 summary = tailored_cv.summary
                 experiences = tailored_cv.experiences
+                
+                # Store tailored content in session for PDF download
+                session['tailored_summary'] = summary
+                session['tailored_experiences'] = experiences
+                
                 flash('CV content tailored with LLM', 'success')
             
             except Exception as e:
@@ -234,9 +240,17 @@ def preview():
                 flash(f'LLM tailoring failed, using selected content: {str(e)}', 'warning')
                 summary = cv_data.summary
                 experiences = selected_content.experiences
+                
+                # Store non-tailored content in session
+                session['tailored_summary'] = summary
+                session['tailored_experiences'] = experiences
         else:
             summary = cv_data.summary
             experiences = selected_content.experiences
+            
+            # Store non-tailored content in session
+            session['tailored_summary'] = summary
+            session['tailored_experiences'] = experiences
         
         return render_template(
             'generate/preview.html',
@@ -280,37 +294,54 @@ def download():
             job_requirements=job_info
         )
         
-        # Tailor if requested
-        if use_tailoring:
-            try:
-                settings_path = current_app.config['SETTINGS_PATH']
-                with open(settings_path) as f:
-                    settings = yaml.safe_load(f)
-                
-                llm_manager = LLMManager(settings)
-                llm = llm_manager.get_provider()  # Uses default provider from settings
-                
-                tailor = CVTailoringEngine(llm)
-                tailored_cv = tailor.tailor_cv(
-                    selected_content=selected_content,
-                    job_requirements=job_info
-                )
-                
-                summary = tailored_cv.summary
-                experiences = tailored_cv.experiences
-            except:
+        # Use already-tailored content from session (set during preview)
+        summary = session.get('tailored_summary')
+        experiences = session.get('tailored_experiences')
+        
+        # Fallback if session data is missing
+        if not summary or not experiences:
+            logger.warning("Tailored content not found in session, regenerating...")
+            flash('Session data missing, regenerating content...', 'warning')
+            
+            if use_tailoring:
+                try:
+                    from core.data_manager import DataManager
+                    data_manager = DataManager()
+                    settings = data_manager.load_settings()
+                    
+                    llm_manager = LLMManager(settings.model_dump())
+                    llm = llm_manager.get_provider()
+                    
+                    tailor = CVTailoringEngine(llm)
+                    tailored_cv = tailor.tailor_cv(
+                        selected_content=selected_content,
+                        job_requirements=job_info
+                    )
+                    
+                    summary = tailored_cv.summary
+                    experiences = tailored_cv.experiences
+                except Exception as e:
+                    logger.error(f"Error tailoring CV: {e}")
+                    summary = cv_data.summary
+                    experiences = selected_content.experiences
+            else:
                 summary = cv_data.summary
                 experiences = selected_content.experiences
-        else:
-            summary = cv_data.summary
-            experiences = selected_content.experiences
         
         # Generate PDF
         generator = PDFGenerator()
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         name_slug = cv_data.personal.name.lower().replace(" ", "_")
-        output_path = current_app.config['OUTPUT_FOLDER'] / f"{name_slug}_cv_{timestamp}.pdf"
+        
+        # Use absolute path from project root
+        from pathlib import Path
+        project_root = Path(current_app.root_path).parent
+        output_dir = project_root / 'output'
+        output_dir.mkdir(exist_ok=True)
+        output_path = output_dir / f"{name_slug}_cv_{timestamp}.pdf"
+        
+        logger.info(f"Generating PDF to: {output_path}")
         
         generator.generate_pdf_from_selected_content(
             personal_info=cv_data.personal.model_dump(),
@@ -323,15 +354,21 @@ def download():
             output_path=output_path
         )
         
+        if not output_path.exists():
+            raise FileNotFoundError(f"PDF was not created at {output_path}")
+        
+        logger.info(f"PDF successfully created at: {output_path}")
+        
         return send_file(
-            output_path,
+            str(output_path),
             as_attachment=True,
             download_name=f"{name_slug}_cv.pdf",
             mimetype='application/pdf'
         )
     
     except Exception as e:
-        logger.error(f"Error generating PDF: {e}")
+        logger.error(f"Error generating PDF: {e}", exc_info=True)
         flash(f'Error generating PDF: {str(e)}', 'danger')
-        return redirect(url_for('generate.preview'))
+        # Don't redirect to preview (which would re-tailor), stay on current page
+        return redirect(url_for('generate.job_input'))
 
