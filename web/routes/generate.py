@@ -217,16 +217,16 @@ def preview():
                     settings = yaml.safe_load(f)
                 
                 llm_manager = LLMManager(settings)
-                llm = llm_manager.get_provider("default")
+                llm = llm_manager.get_provider()  # Uses default provider from settings
                 
                 tailor = CVTailoringEngine(llm)
                 tailored_cv = tailor.tailor_cv(
                     selected_content=selected_content,
-                    job_requirements=job_info.required_skills
+                    job_requirements=job_info
                 )
                 
                 summary = tailored_cv.summary
-                experiences = tailored_cv.experience
+                experiences = tailored_cv.experiences
                 flash('CV content tailored with LLM', 'success')
             
             except Exception as e:
@@ -288,16 +288,16 @@ def download():
                     settings = yaml.safe_load(f)
                 
                 llm_manager = LLMManager(settings)
-                llm = llm_manager.get_provider("default")
+                llm = llm_manager.get_provider()  # Uses default provider from settings
                 
                 tailor = CVTailoringEngine(llm)
                 tailored_cv = tailor.tailor_cv(
                     selected_content=selected_content,
-                    job_requirements=job_info.required_skills
+                    job_requirements=job_info
                 )
                 
                 summary = tailored_cv.summary
-                experiences = tailored_cv.experience
+                experiences = tailored_cv.experiences
             except:
                 summary = cv_data.summary
                 experiences = selected_content.experiences
