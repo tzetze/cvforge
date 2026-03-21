@@ -83,6 +83,7 @@
                                 </div>
 
                                 <div class="achievements-container">
+                                    {% set exp_index = loop.index0 %}
                                     {% for achievement in exp.achievements %}
                                     <div class="achievement-item card mb-3 border-secondary">
                                         <div class="card-body">
@@ -98,7 +99,7 @@
                                                 <label class="form-label">Description <span
                                                         class="text-danger">*</span></label>
                                                 <textarea class="form-control"
-                                                    name="experience[{{ loop.parent.loop.index0 }}][achievements][{{ loop.index0 }}][text]"
+                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][text]"
                                                     rows="2" required>{{ achievement.text }}</textarea>
                                             </div>
 
@@ -107,7 +108,7 @@
                                                     <label class="form-label">Skills/Technologies <span
                                                             class="text-danger">*</span></label>
                                                     <input type="text" class="form-control"
-                                                        name="experience[{{ loop.parent.loop.index0 }}][achievements][{{ loop.index0 }}][skills]"
+                                                        name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][skills]"
                                                         value="{{ achievement.skills|join(', ') }}"
                                                         placeholder="Python, AWS, Docker" required>
                                                     <small class="form-text text-muted">Comma-separated</small>
@@ -116,7 +117,7 @@
                                                     <label class="form-label">Impact Level <span
                                                             class="text-danger">*</span></label>
                                                     <select class="form-select"
-                                                        name="experience[{{ loop.parent.loop.index0 }}][achievements][{{ loop.index0 }}][impact]"
+                                                        name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][impact]"
                                                         required>
                                                         <option value="high" {% if achievement.impact=='high'
                                                             %}selected{% endif %}>High</option>
@@ -131,7 +132,7 @@
                                             <div class="mb-2">
                                                 <label class="form-label">Metrics (Optional)</label>
                                                 <input type="text" class="form-control"
-                                                    name="experience[{{ loop.parent.loop.index0 }}][achievements][{{ loop.index0 }}][metrics]"
+                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics]"
                                                     value="{% if achievement.metrics %}{{ achievement.metrics|tojson }}{% endif %}"
                                                     placeholder='{"performance": "50% improvement"}'>
                                                 <small class="form-text text-muted">JSON format or simple text</small>
@@ -140,7 +141,7 @@
                                             <div class="mb-2">
                                                 <label class="form-label">Keywords (Optional)</label>
                                                 <input type="text" class="form-control"
-                                                    name="experience[{{ loop.parent.loop.index0 }}][achievements][{{ loop.index0 }}][keywords]"
+                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][keywords]"
                                                     value="{% if achievement.keywords %}{{ achievement.keywords|join(', ') }}{% endif %}"
                                                     placeholder="leadership, optimization, automation">
                                                 <small class="form-text text-muted">Comma-separated</small>
