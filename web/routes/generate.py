@@ -12,6 +12,7 @@ import yaml
 
 from core.data_manager import load_cv_data
 from core.job.parser import JobDescriptionParser
+from core.job.ai_parser import AIJobDescriptionParser
 from core.job.scraper import LinkedInJobScraper
 from core.scoring.achievement_scorer import AchievementScorer
 from core.generation import CVContentSelector, CVTailoringEngine, PDFGenerator
@@ -98,9 +99,33 @@ def analyze():
         cv_data_path = current_app.config['CV_DATA_PATH']
         cv_data = load_cv_data(str(cv_data_path))
         
-        # Parse job description
-        parser = JobDescriptionParser()
-        job_info = parser.parse({'description': job_description})
+        # Parse job description with AI (with fallback to traditional parser)
+        try:
+            # Try to use AI parser if LLM is configured
+            from core.data_manager import DataManager
+            data_manager = DataManager()
+            settings = data_manager.load_settings()
+            settings_dict = settings.model_dump()
+            
+            llm_manager = LLMManager(settings_dict)
+            llm_provider = llm_manager.get_default_provider()
+            
+            # Use AI parser
+            logger.info("Using AI-powered job parser")
+            ai_parser = AIJobDescriptionParser(llm_provider)
+            job_info = ai_parser.parse({
+                'description': job_description,
+                'title': session.get('job_title'),
+                'company': session.get('job_company')
+            })
+            session['parser_type'] = 'ai'
+            
+        except Exception as e:
+            # Fall back to traditional parser
+            logger.warning(f"AI parser failed, falling back to traditional parser: {e}")
+            parser = JobDescriptionParser()
+            job_info = parser.parse({'description': job_description})
+            session['parser_type'] = 'traditional'
         
         # Score achievements
         scorer = AchievementScorer()
