@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}View CV Data - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">CV Data</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Personal Information -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Personal Information</h5>
+                <a href="{{ url_for('cv_data.edit_personal_info') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ cv_data.personal.name }}</p>
+                <p><strong>Email:</strong> {{ cv_data.personal.email }}</p>
+                {% if cv_data.personal.phone %}<p><strong>Phone:</strong> {{ cv_data.personal.phone }}</p>{% endif %}
+                {% if cv_data.personal.location %}<p><strong>Location:</strong> {{ cv_data.personal.location }}</p>{%
+                endif %}
+                {% if cv_data.personal.linkedin %}<p><strong>LinkedIn:</strong> <a
+                        href="{{ cv_data.personal.linkedin }}">{{ cv_data.personal.linkedin }}</a></p>{% endif %}
+                {% if cv_data.personal.github %}<p><strong>GitHub:</strong> <a href="{{ cv_data.personal.github }}">{{
+                        cv_data.personal.github }}</a></p>{% endif %}
+                {% if cv_data.personal.website %}<p><strong>Website:</strong> <a
+                        href="{{ cv_data.personal.website }}">{{ cv_data.personal.website }}</a></p>{% endif %}
+            </div>
+        </div>
+
+        <!-- Professional Summary -->
+        {% if cv_data.summary %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Professional Summary</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ cv_data.summary }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Experience -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Experience ({{ cv_data.experience|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% for exp in cv_data.experience %}
+                <div class="mb-4 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ exp.position }} at {{ exp.company }}</h6>
+                    <p class="text-muted">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}
+                        {% if exp.location %} | {{ exp.location }}{% endif %}
+                    </p>
+                    {% if exp.description %}<p>{{ exp.description }}</p>{% endif %}
+                    <p><strong>Achievements ({{ exp.achievements|length }}):</strong></p>
+                    <ul>
+                        {% for achievement in exp.achievements %}
+                        <li>{{ achievement.text }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Skills -->
+        {% if cv_data.skills %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-code-slash"></i> Skills</h5>
+            </div>
+            <div class="card-body">
+                {% if cv_data.skills.technical %}
+                <p><strong>Technical Skills:</strong></p>
+                <ul>
+                    {% for skill in cv_data.skills.technical %}
+                    <li>{{ skill.name }} ({{ skill.level }})</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% if cv_data.skills.soft %}
+                <p><strong>Soft Skills:</strong> {{ cv_data.skills.soft|join(', ') }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% if cv_data.education %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-mortarboard"></i> Education</h5>
+            </div>
+            <div class="card-body">
+                {% for edu in cv_data.education %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ edu.degree }} in {{ edu.field }}</h6>
+                    <p class="text-muted">{{ edu.institution }} | {{ edu.graduation_date }}</p>
+                    {% if edu.gpa %}<p>GPA: {{ edu.gpa }}</p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('generate.index') }}" class="btn btn-primary">
+                <i class="bi bi-magic"></i> Generate CV
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

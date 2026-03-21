@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Generate CV - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Generate Targeted CV</h2>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">CV Generation Workflow</h5>
+                <p class="card-text">Follow these steps to generate a targeted CV for a specific job:</p>
+
+                <ol class="mt-4">
+                    <li class="mb-3">
+                        <strong>Input Job Description</strong>
+                        <p class="text-muted">Paste the job description or provide a LinkedIn job URL</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Analyze Match</strong>
+                        <p class="text-muted">See how well your experience matches the job requirements</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Optional: AI Tailoring</strong>
+                        <p class="text-muted">Use LLM to rewrite content for better job fit</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Preview & Download</strong>
+                        <p class="text-muted">Review the generated CV and download as PDF</p>
+                    </li>
+                </ol>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('generate.job_input') }}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play-circle"></i> Start Generation
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Make sure your CV data is complete and up-to-date
+            before generating a targeted CV.
+            <a href="{{ url_for('cv_data.view') }}">View your CV data</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
