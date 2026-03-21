@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Job Analysis - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Job Match Analysis</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Match Score Card -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Overall Match Score</h5>
+            </div>
+            <div class="card-body text-center">
+                <h1 class="display-3">{{ "%.0f"|format(selected_content.job_match_summary['overall_match'] * 100) }}%
+                </h1>
+                <p class="lead">Your CV matches this job</p>
+            </div>
+        </div>
+
+        <!-- Job Requirements -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Job Requirements</h5>
+            </div>
+            <div class="card-body">
+                <h6>Required Skills ({{ job_info.required_skills|length }})</h6>
+                <div class="mb-3">
+                    {% for skill in job_info.required_skills %}
+                    <span class="badge bg-danger me-1 mb-1">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+
+                {% if job_info.preferred_skills %}
+                <h6>Preferred Skills ({{ job_info.preferred_skills|length }})</h6>
+                <div class="mb-3">
+                    {% for skill in job_info.preferred_skills %}
+                    <span class="badge bg-warning me-1 mb-1">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if job_info.keywords %}
+                <h6>Keywords ({{ job_info.keywords|length }})</h6>
+                <div>
+                    {% for keyword in job_info.keywords %}
+                    <span class="badge bg-secondary me-1 mb-1">{{ keyword }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Selected Content Summary -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-check2-square"></i> Selected Content</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3>{{ selected_content.experiences|length }}</h3>
+                        <p class="text-muted">Experiences</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ selected_content.total_achievements_selected }}</h3>
+                        <p class="text-muted">Achievements</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ "%.1f"|format(selected_content.average_relevance_score * 100) }}%</h3>
+                        <p class="text-muted">Avg Relevance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Experiences Preview -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Selected Experiences</h5>
+            </div>
+            <div class="card-body">
+                {% for exp in selected_content.experiences %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ exp.position }} at {{ exp.company }}</h6>
+                    <p class="text-muted small">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</p>
+                    <p><strong>Selected Achievements ({{ exp.achievements|length }}):</strong></p>
+                    <ul>
+                        {% for achievement in exp.achievements %}
+                        <li>{{ achievement.text }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{{ url_for('generate.job_input') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <a href="{{ url_for('generate.tailor') }}" class="btn btn-primary">
+                <i class="bi bi-arrow-right"></i> Continue to Tailoring
+            </a>
+            <a href="{{ url_for('generate.preview') }}" class="btn btn-success">
+                <i class="bi bi-eye"></i> Skip to Preview
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
