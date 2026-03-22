@@ -11,12 +11,14 @@ from datetime import datetime
 import yaml
 
 from core.data_manager import load_cv_data
-from core.job.parser import JobDescriptionParser
+from core.job.parser import JobDescriptionParser, JobRequirements
 from core.job.ai_parser import AIJobDescriptionParser
 from core.job.scraper import LinkedInJobScraper
 from core.scoring.achievement_scorer import AchievementScorer
 from core.generation import CVContentSelector, CVTailoringEngine, PDFGenerator
+from core.generation.cv_selector import SelectedContent
 from core.llm.factory import LLMManager
+from core.models import Experience, Achievement, ImpactLevel
 
 logger = logging.getLogger(__name__)
 
@@ -136,12 +138,21 @@ def analyze():
             job_requirements=job_info
         )
         
-        # Store in session
+        # Store in session for later use
         session['job_info'] = {
             'required_skills': job_info.required_skills,
             'preferred_skills': job_info.preferred_skills,
-            'keywords': job_info.keywords
+            'keywords': list(job_info.keywords) if job_info.keywords else []
         }
+        
+        # Store selected content in session (already in dict format from selector)
+        session['selected_experiences'] = selected_content.experiences
+        session['selected_summary'] = selected_content.summary
+        session['selected_skills'] = selected_content.skills
+        session['selected_education'] = selected_content.education
+        session['selected_certifications'] = selected_content.certifications
+        session['selected_projects'] = selected_content.projects
+        
         # Calculate overall match from skill_match_rate and average_score
         match_summary = selected_content.job_match_summary
         if match_summary:
@@ -151,6 +162,7 @@ def analyze():
         else:
             overall_match = 0
         session['match_score'] = overall_match
+        session['job_match_summary'] = match_summary
         
         return render_template(
             'generate/analyze.html',
@@ -214,25 +226,38 @@ def preview():
         cv_data_path = current_app.config['CV_DATA_PATH']
         cv_data = load_cv_data(str(cv_data_path))
         
-        # Get job info from session
+        # Get job info and selected content from session
         job_description = session.get('job_description')
         job_info_dict = session.get('job_info', {})
+        selected_experiences_data = session.get('selected_experiences', [])
         use_tailoring = session.get('use_tailoring', False)
         
-        if not job_description:
-            flash('Session expired. Please start over.', 'warning')
+        if not job_description or not selected_experiences_data:
+            flash('Session expired. Please start over from job analysis.', 'warning')
             return redirect(url_for('generate.job_input'))
         
-        # Parse and select content
-        parser = JobDescriptionParser()
-        job_info = parser.parse({'description': job_description})
+        # Reconstruct job_info from session
+        job_info = JobRequirements(
+            required_skills=job_info_dict.get('required_skills', []),
+            preferred_skills=job_info_dict.get('preferred_skills', []),
+            keywords=set(job_info_dict.get('keywords', []))
+        )
         
-        scorer = AchievementScorer()
-        selector = CVContentSelector(scorer)
-        
-        selected_content = selector.select_content(
-            cv_data=cv_data,
-            job_requirements=job_info
+        # Reconstruct selected_content from session (already in correct dict format)
+        selected_content = SelectedContent(
+            personal_info=cv_data.personal.model_dump() if cv_data.personal else {},
+            summary=session.get('selected_summary'),
+            experiences=selected_experiences_data,  # Already in dict format
+            skills=session.get('selected_skills', {}),
+            education=session.get('selected_education'),
+            certifications=session.get('selected_certifications'),
+            volunteer=None,  # Not stored in session for now
+            projects=session.get('selected_projects'),
+            publications=None,  # Not stored in session for now
+            awards=None,  # Not stored in session for now
+            total_achievements_selected=sum(len(exp.get('achievements', [])) for exp in selected_experiences_data),
+            average_relevance_score=session.get('match_score', 0) / 100.0,  # Convert back from percentage
+            job_match_summary=session.get('job_match_summary', {})
         )
         
         # Tailor if requested
