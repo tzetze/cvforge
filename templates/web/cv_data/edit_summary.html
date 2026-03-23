@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Professional Summary - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Professional Summary</h2>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Professional Summary</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cv_data.edit_summary') }}">
+                    <div class="mb-3">
+                        <label for="summary" class="form-label">Summary</label>
+                        <textarea class="form-control" id="summary" name="summary" rows="6"
+                            placeholder="Write a brief professional summary highlighting your key skills, experience, and career objectives...">{{ cv_data.summary or '' }}</textarea>
+                        <small class="form-text text-muted">
+                            A concise overview of your professional background and what you bring to potential
+                            employers.
+                            Typically 2-4 sentences.
+                        </small>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

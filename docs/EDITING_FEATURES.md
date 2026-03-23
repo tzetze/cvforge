@@ -179,7 +179,7 @@ All changes are saved to the YAML file specified in the application configuratio
 - [ ] Edit achievement details
 - [ ] Remove an achievement
 - [ ] Test with multiple skills (comma-separated)
-- [ ] Test with JSON metrics
+- [ ] Test with key-value pair metrics
 - [ ] Test date validation (YYYY-MM format)
 - [ ] Test 'present' as end date
 - [ ] Verify data persists after save
@@ -215,7 +215,7 @@ All changes are saved to the YAML file specified in the application configuratio
 
 1. **Minimum Items:** Each section requires at least one item (enforced by JavaScript)
 2. **Date Format:** Strict validation for YYYY-MM format (or YYYY for education)
-3. **Metrics Format:** Achievements metrics should be valid JSON or simple text
+3. **Metrics Format:** Achievements metrics are key-value pairs (e.g., performance: "50%", cost_savings: "$5K")
 4. **Browser Compatibility:** Tested on modern browsers (Chrome, Firefox, Safari, Edge)
 
 ## Future Enhancements

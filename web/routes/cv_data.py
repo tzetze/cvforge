@@ -152,16 +152,29 @@ def edit_experience():
                         impact_str = request.form.get(f'experience[{i}][achievements][{ach_count}][impact]', 'medium')
                         impact = ImpactLevel(impact_str) if impact_str else ImpactLevel.MEDIUM
                         
-                        # Parse metrics (optional JSON-like format)
-                        metrics_str = request.form.get(f'experience[{i}][achievements][{ach_count}][metrics]', '').strip()
-                        metrics = None
-                        if metrics_str:
-                            try:
-                                import json
-                                metrics = json.loads(metrics_str)
-                            except:
-                                # If not valid JSON, store as simple dict
-                                metrics = {'note': metrics_str}
+                        # Parse metrics as key-value pairs
+                        metrics = {}
+                        metric_count = 0
+                        while f'experience[{i}][achievements][{ach_count}][metrics][{metric_count}][key]' in request.form:
+                            key = request.form.get(f'experience[{i}][achievements][{ach_count}][metrics][{metric_count}][key]', '').strip()
+                            value = request.form.get(f'experience[{i}][achievements][{ach_count}][metrics][{metric_count}][value]', '').strip()
+                            
+                            if key and value:
+                                # Try to convert to number if possible
+                                try:
+                                    if '.' in value:
+                                        metrics[key] = float(value)
+                                    else:
+                                        metrics[key] = int(value)
+                                except ValueError:
+                                    # Keep as string
+                                    metrics[key] = value
+                            
+                            metric_count += 1
+                        
+                        # If no metrics were added, set to None
+                        if not metrics:
+                            metrics = None
                         
                         # Get keywords (comma-separated, optional)
                         keywords_str = request.form.get(f'experience[{i}][achievements][{ach_count}][keywords]', '').strip()

@@ -131,11 +131,36 @@
 
                                             <div class="mb-2">
                                                 <label class="form-label">Metrics (Optional)</label>
-                                                <input type="text" class="form-control"
-                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics]"
-                                                    value="{% if achievement.metrics %}{{ achievement.metrics|tojson }}{% endif %}"
-                                                    placeholder='{"performance": "50% improvement"}'>
-                                                <small class="form-text text-muted">JSON format or simple text</small>
+                                                <div class="metrics-container border rounded p-2 bg-light">
+                                                    {% if achievement.metrics %}
+                                                    {% for key, value in achievement.metrics.items() %}
+                                                    <div class="row mb-2 metric-row">
+                                                        <div class="col-5">
+                                                            <input type="text" class="form-control form-control-sm"
+                                                                name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics][{{ loop.index0 }}][key]"
+                                                                value="{{ key }}" placeholder="Key (e.g., performance)">
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <input type="text" class="form-control form-control-sm"
+                                                                name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics][{{ loop.index0 }}][value]"
+                                                                value="{{ value }}" placeholder="Value (e.g., 50%)">
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                                onclick="this.closest('.metric-row').remove()">
+                                                                <i class="bi bi-x"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                    {% endif %}
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary mt-1"
+                                                    onclick="addMetricRow(this, {{ exp_index }}, {{ loop.index0 }})">
+                                                    <i class="bi bi-plus"></i> Add Metric
+                                                </button>
+                                                <small class="form-text text-muted d-block">Add key-value pairs (e.g.,
+                                                    performance: "50%", cost_savings: "$5K")</small>
                                             </div>
 
                                             <div class="mb-2">
@@ -273,9 +298,15 @@
 
                         <div class="mb-2">
                             <label class="form-label">Metrics (Optional)</label>
-                            <input type="text" class="form-control" name="experience[{INDEX}][achievements][0][metrics]"
-                                placeholder='{"performance": "50% improvement"}'>
-                            <small class="form-text text-muted">JSON format or simple text</small>
+                            <div class="metrics-container border rounded p-2 bg-light">
+                                <!-- Metrics will be added dynamically -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-1"
+                                onclick="addMetricRow(this, '{INDEX}', 0)">
+                                <i class="bi bi-plus"></i> Add Metric
+                            </button>
+                            <small class="form-text text-muted d-block">Add key-value pairs (e.g., performance: "50%",
+                                cost_savings: "$5K")</small>
                         </div>
 
                         <div class="mb-2">
@@ -331,10 +362,15 @@
 
             <div class="mb-2">
                 <label class="form-label">Metrics (Optional)</label>
-                <input type="text" class="form-control"
-                    name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][metrics]"
-                    placeholder='{"performance": "50% improvement"}'>
-                <small class="form-text text-muted">JSON format or simple text</small>
+                <div class="metrics-container border rounded p-2 bg-light">
+                    <!-- Metrics will be added dynamically -->
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-1"
+                    onclick="addMetricRow(this, '{PARENT_INDEX}', '{NESTED_INDEX}')">
+                    <i class="bi bi-plus"></i> Add Metric
+                </button>
+                <small class="form-text text-muted d-block">Add key-value pairs (e.g., performance: "50%", cost_savings:
+                    "$5K")</small>
             </div>
 
             <div class="mb-2">
@@ -349,4 +385,33 @@
 </template>
 
 <script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
+<script>
+    // Function to add a new metric row
+    function addMetricRow(button, expIndex, achIndex) {
+        const container = button.previousElementSibling;
+        const metricCount = container.querySelectorAll('.metric-row').length;
+
+        const row = document.createElement('div');
+        row.className = 'row mb-2 metric-row';
+        row.innerHTML = `
+        <div class="col-5">
+            <input type="text" class="form-control form-control-sm"
+                name="experience[${expIndex}][achievements][${achIndex}][metrics][${metricCount}][key]"
+                placeholder="Key (e.g., performance)">
+        </div>
+        <div class="col-5">
+            <input type="text" class="form-control form-control-sm"
+                name="experience[${expIndex}][achievements][${achIndex}][metrics][${metricCount}][value]"
+                placeholder="Value (e.g., 50%)">
+        </div>
+        <div class="col-2">
+            <button type="button" class="btn btn-sm btn-outline-danger"
+                onclick="this.closest('.metric-row').remove()">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    `;
+        container.appendChild(row);
+    }
+</script>
 {% endblock %}
