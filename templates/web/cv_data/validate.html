@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}CV Validation Report - CVForge{% endblock %}
+
+{% block extra_css %}
+<style>
+    .validation-summary {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .validation-card {
+        flex: 1;
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .validation-card.valid {
+        background-color: #d4edda;
+        border: 2px solid #28a745;
+    }
+
+    .validation-card.invalid {
+        background-color: #f8d7da;
+        border: 2px solid #dc3545;
+    }
+
+    .validation-card h3 {
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    .validation-card p {
+        margin: 0.5rem 0 0 0;
+        font-weight: 600;
+    }
+
+    .issue-card {
+        margin-bottom: 1rem;
+        border-left: 4px solid;
+    }
+
+    .issue-card.error {
+        border-left-color: #dc3545;
+        background-color: #f8d7da;
+    }
+
+    .issue-card.warning {
+        border-left-color: #ffc107;
+        background-color: #fff3cd;
+    }
+
+    .issue-card.info {
+        border-left-color: #17a2b8;
+        background-color: #d1ecf1;
+    }
+
+    .issue-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+
+    .issue-category {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .category-personal_info {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .category-summary {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .category-experiences {
+        background-color: #fff3e0;
+        color: #f57c00;
+    }
+
+    .category-achievements {
+        background-color: #e8f5e9;
+        color: #388e3c;
+    }
+
+    .category-skills {
+        background-color: #fce4ec;
+        color: #c2185b;
+    }
+
+    .category-education {
+        background-color: #e0f2f1;
+        color: #00796b;
+    }
+
+    .category-certifications {
+        background-color: #f1f8e9;
+        color: #689f38;
+    }
+
+    .category-projects {
+        background-color: #ede7f6;
+        color: #5e35b1;
+    }
+
+    .category-completeness {
+        background-color: #e1f5fe;
+        color: #0277bd;
+    }
+
+    .suggestion-box {
+        background-color: #f8f9fa;
+        border-left: 3px solid #6c757d;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    .field-path {
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h2 class="mb-4">
+            <i class="bi bi-clipboard-check"></i> CV Validation Report
+        </h2>
+
+        <!-- Validation Summary -->
+        <div class="validation-summary">
+            <div class="validation-card {% if report.is_valid %}valid{% else %}invalid{% endif %}">
+                <h3>
+                    {% if report.is_valid %}
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    {% else %}
+                    <i class="bi bi-x-circle-fill text-danger"></i>
+                    {% endif %}
+                </h3>
+                <p>{% if report.is_valid %}VALID{% else %}INVALID{% endif %}</p>
+            </div>
+
+            <div class="validation-card" style="background-color: #f8d7da; border: 2px solid #dc3545;">
+                <h3 class="text-danger">{{ report.error_count }}</h3>
+                <p>Errors</p>
+            </div>
+
+            <div class="validation-card" style="background-color: #fff3cd; border: 2px solid #ffc107;">
+                <h3 class="text-warning">{{ report.warning_count }}</h3>
+                <p>Warnings</p>
+            </div>
+
+            <div class="validation-card" style="background-color: #d1ecf1; border: 2px solid #17a2b8;">
+                <h3 class="text-info">{{ report.info_count }}</h3>
+                <p>Info</p>
+            </div>
+        </div>
+
+        <!-- Overall Status Message -->
+        {% if report.is_valid %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            <strong>Great job!</strong> Your CV data is valid and ready to use.
+            {% if report.warning_count > 0 or report.info_count > 0 %}
+            However, there are some recommendations below to make it even better.
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Action Required:</strong> Your CV has {{ report.error_count }} error(s) that must be fixed before
+            generating a CV.
+        </div>
+        {% endif %}
+
+        <!-- Issues by Severity -->
+        {% if report.issues %}
+
+        <!-- Errors -->
+        {% set errors = report.get_issues_by_severity('error') %}
+        {% if errors %}
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-x-circle"></i> Errors ({{ errors|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for issue in errors %}
+                <div class="issue-card error">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <span class="issue-icon">❌</span>
+                            <div class="flex-grow-1">
+                                <strong>{{ issue.message }}</strong>
+                                <span class="issue-category category-{{ issue.category }}">{{ issue.category }}</span>
+                                {% if issue.field %}
+                                <div class="field-path">Field: {{ issue.field }}</div>
+                                {% endif %}
+                                {% if issue.suggestion %}
+                                <div class="suggestion-box">
+                                    <i class="bi bi-lightbulb"></i> <strong>Suggestion:</strong> {{ issue.suggestion }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Warnings -->
+        {% set warnings = report.get_issues_by_severity('warning') %}
+        {% if warnings %}
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Warnings ({{ warnings|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for issue in warnings %}
+                <div class="issue-card warning">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <span class="issue-icon">⚠️</span>
+                            <div class="flex-grow-1">
+                                <strong>{{ issue.message }}</strong>
+                                <span class="issue-category category-{{ issue.category }}">{{ issue.category }}</span>
+                                {% if issue.field %}
+                                <div class="field-path">Field: {{ issue.field }}</div>
+                                {% endif %}
+                                {% if issue.suggestion %}
+                                <div class="suggestion-box">
+                                    <i class="bi bi-lightbulb"></i> <strong>Suggestion:</strong> {{ issue.suggestion }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Info -->
+        {% set infos = report.get_issues_by_severity('info') %}
+        {% if infos %}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Recommendations ({{ infos|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for issue in infos %}
+                <div class="issue-card info">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <span class="issue-icon">ℹ️</span>
+                            <div class="flex-grow-1">
+                                <strong>{{ issue.message }}</strong>
+                                <span class="issue-category category-{{ issue.category }}">{{ issue.category }}</span>
+                                {% if issue.field %}
+                                <div class="field-path">Field: {{ issue.field }}</div>
+                                {% endif %}
+                                {% if issue.suggestion %}
+                                <div class="suggestion-box">
+                                    <i class="bi bi-lightbulb"></i> <strong>Suggestion:</strong> {{ issue.suggestion }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i>
+            <strong>Perfect!</strong> No issues found. Your CV data is in excellent shape!
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to CV Data
+            </a>
+            {% if report.error_count > 0 %}
+            <a href="{{ url_for('cv_data.edit_personal_info') }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Fix Issues
+            </a>
+            {% else %}
+            <a href="{{ url_for('generate.index') }}" class="btn btn-success">
+                <i class="bi bi-magic"></i> Generate CV
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Report Metadata -->
+        <div class="text-center text-muted mt-4">
+            <small>
+                <i class="bi bi-clock"></i> Report generated: {{ report.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
