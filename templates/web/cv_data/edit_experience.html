@@ -133,16 +133,17 @@
                                                 <label class="form-label">Metrics (Optional)</label>
                                                 <div class="metrics-container border rounded p-2 bg-light">
                                                     {% if achievement.metrics %}
+                                                    {% set ach_index = loop.index0 %}
                                                     {% for key, value in achievement.metrics.items() %}
                                                     <div class="row mb-2 metric-row">
                                                         <div class="col-5">
                                                             <input type="text" class="form-control form-control-sm"
-                                                                name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics][{{ loop.index0 }}][key]"
+                                                                name="experience[{{ exp_index }}][achievements][{{ ach_index }}][metrics][{{ loop.index0 }}][key]"
                                                                 value="{{ key }}" placeholder="Key (e.g., performance)">
                                                         </div>
                                                         <div class="col-5">
                                                             <input type="text" class="form-control form-control-sm"
-                                                                name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][metrics][{{ loop.index0 }}][value]"
+                                                                name="experience[{{ exp_index }}][achievements][{{ ach_index }}][metrics][{{ loop.index0 }}][value]"
                                                                 value="{{ value }}" placeholder="Value (e.g., 50%)">
                                                         </div>
                                                         <div class="col-2">
@@ -156,7 +157,7 @@
                                                     {% endif %}
                                                 </div>
                                                 <button type="button" class="btn btn-sm btn-outline-primary mt-1"
-                                                    onclick="addMetricRow(this, {{ exp_index }}, {{ loop.index0 }})">
+                                                    onclick="addMetricRow(this, {{ exp_index }}, {{ ach_index }})">
                                                     <i class="bi bi-plus"></i> Add Metric
                                                 </button>
                                                 <small class="form-text text-muted d-block">Add key-value pairs (e.g.,
