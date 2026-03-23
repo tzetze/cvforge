@@ -95,26 +95,16 @@
                                                 </button>
                                             </div>
 
-                                            <div class="mb-2">
-                                                <label class="form-label">Description <span
-                                                        class="text-danger">*</span></label>
-                                                <textarea class="form-control"
-                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][text]"
-                                                    rows="2" required>{{ achievement.text }}</textarea>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-6 mb-2">
-                                                    <label class="form-label">Skills/Technologies <span
+                                            <div class="row mb-2">
+                                                <div class="col-md-9">
+                                                    <label class="form-label">Description <span
                                                             class="text-danger">*</span></label>
-                                                    <input type="text" class="form-control"
-                                                        name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][skills]"
-                                                        value="{{ achievement.skills|join(', ') }}"
-                                                        placeholder="Python, AWS, Docker" required>
-                                                    <small class="form-text text-muted">Comma-separated</small>
+                                                    <textarea class="form-control"
+                                                        name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][text]"
+                                                        rows="2" required>{{ achievement.text }}</textarea>
                                                 </div>
-                                                <div class="col-md-6 mb-2">
-                                                    <label class="form-label">Impact Level <span
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Impact <span
                                                             class="text-danger">*</span></label>
                                                     <select class="form-select"
                                                         name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][impact]"
@@ -127,6 +117,16 @@
                                                             endif %}>Low</option>
                                                     </select>
                                                 </div>
+                                            </div>
+
+                                            <div class="mb-2">
+                                                <label class="form-label">Skills/Technologies <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control"
+                                                    name="experience[{{ exp_index }}][achievements][{{ loop.index0 }}][skills]"
+                                                    value="{{ achievement.skills|join(', ') }}"
+                                                    placeholder="Python, AWS, Docker" required>
+                                                <small class="form-text text-muted">Comma-separated</small>
                                             </div>
 
                                             <div class="mb-2">
@@ -271,22 +271,14 @@
                             </button>
                         </div>
 
-                        <div class="mb-2">
-                            <label class="form-label">Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="experience[{INDEX}][achievements][0][text]" rows="2"
-                                required></textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Skills/Technologies <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control"
-                                    name="experience[{INDEX}][achievements][0][skills]"
-                                    placeholder="Python, AWS, Docker" required>
-                                <small class="form-text text-muted">Comma-separated</small>
+                        <div class="row mb-2">
+                            <div class="col-md-9">
+                                <label class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" name="experience[{INDEX}][achievements][0][text]"
+                                    rows="2" required></textarea>
                             </div>
-                            <div class="col-md-6 mb-2">
-                                <label class="form-label">Impact Level <span class="text-danger">*</span></label>
+                            <div class="col-md-3">
+                                <label class="form-label">Impact <span class="text-danger">*</span></label>
                                 <select class="form-select" name="experience[{INDEX}][achievements][0][impact]"
                                     required>
                                     <option value="high">High</option>
@@ -294,6 +286,13 @@
                                     <option value="low">Low</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Skills/Technologies <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="experience[{INDEX}][achievements][0][skills]"
+                                placeholder="Python, AWS, Docker" required>
+                            <small class="form-text text-muted">Comma-separated</small>
                         </div>
 
                         <div class="mb-2">
@@ -335,22 +334,14 @@
                 </button>
             </div>
 
-            <div class="mb-2">
-                <label class="form-label">Description <span class="text-danger">*</span></label>
-                <textarea class="form-control" name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][text]"
-                    rows="2" required></textarea>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Skills/Technologies <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control"
-                        name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][skills]"
-                        placeholder="Python, AWS, Docker" required>
-                    <small class="form-text text-muted">Comma-separated</small>
+            <div class="row mb-2">
+                <div class="col-md-9">
+                    <label class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea class="form-control" name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][text]"
+                        rows="2" required></textarea>
                 </div>
-                <div class="col-md-6 mb-2">
-                    <label class="form-label">Impact Level <span class="text-danger">*</span></label>
+                <div class="col-md-3">
+                    <label class="form-label">Impact <span class="text-danger">*</span></label>
                     <select class="form-select" name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][impact]"
                         required>
                         <option value="high">High</option>
@@ -358,6 +349,14 @@
                         <option value="low">Low</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Skills/Technologies <span class="text-danger">*</span></label>
+                <input type="text" class="form-control"
+                    name="experience[{PARENT_INDEX}][achievements][{NESTED_INDEX}][skills]"
+                    placeholder="Python, AWS, Docker" required>
+                <small class="form-text text-muted">Comma-separated</small>
             </div>
 
             <div class="mb-2">
