@@ -395,7 +395,7 @@
         row.className = 'row mb-2 metric-row';
         row.innerHTML = `
         <div class="col-5">
-            <input type="text" class="form-control form-control-sm"
+            <input type="text" class="form-control form-control-sm metric-key-input"
                 name="experience[${expIndex}][achievements][${achIndex}][metrics][${metricCount}][key]"
                 placeholder="Key (e.g., performance)">
         </div>
@@ -412,6 +412,12 @@
         </div>
     `;
         container.appendChild(row);
+
+        // Focus on the key input field
+        const keyInput = row.querySelector('.metric-key-input');
+        if (keyInput) {
+            keyInput.focus();
+        }
     }
 </script>
 {% endblock %}
