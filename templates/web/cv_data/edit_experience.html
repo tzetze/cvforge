@@ -131,9 +131,9 @@
 
                                             <div class="mb-2">
                                                 <label class="form-label">Metrics (Optional)</label>
+                                                {% set ach_index = loop.index0 %}
                                                 <div class="metrics-container border rounded p-2 bg-light">
                                                     {% if achievement.metrics %}
-                                                    {% set ach_index = loop.index0 %}
                                                     {% for key, value in achievement.metrics.items() %}
                                                     <div class="row mb-2 metric-row">
                                                         <div class="col-5">
