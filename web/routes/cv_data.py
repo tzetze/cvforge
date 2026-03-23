@@ -33,7 +33,7 @@ def view():
     except Exception as e:
         logger.error(f"Error loading CV data: {e}")
         flash(f'Error loading CV data: {str(e)}', 'danger')
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.index'))
 
 
 @cv_data_bp.route('/create', methods=['GET', 'POST'])
@@ -369,7 +369,7 @@ def list_experiences():
     except Exception as e:
         logger.error(f"Error loading experiences: {e}")
         flash(f'Error: {str(e)}', 'danger')
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.index'))
 
 
 @cv_data_bp.route('/validate')
@@ -390,7 +390,7 @@ def validate():
     except Exception as e:
         logger.error(f"Error validating CV: {e}")
         flash(f'Error: {str(e)}', 'danger')
-        return redirect(url_for('main.dashboard'))
+        return redirect(url_for('main.index'))
 
 
 @cv_data_bp.route('/api/stats')

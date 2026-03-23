@@ -18,12 +18,6 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def index():
-    """Home page with overview and quick actions."""
-    return render_template('index.html')
-
-
-@main_bp.route('/dashboard')
-def dashboard():
     """
     Dashboard showing CV status, validation results, and quick stats.
     """
