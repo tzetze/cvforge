@@ -273,7 +273,8 @@ def preview():
                 tailor = CVTailoringEngine(llm)
                 tailored_cv = tailor.tailor_cv(
                     selected_content=selected_content,
-                    job_requirements=job_info
+                    job_requirements=job_info,
+                    job_description=job_description
                 )
                 
                 summary = tailored_cv.summary

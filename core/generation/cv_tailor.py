@@ -68,7 +68,8 @@ class CVTailoringEngine:
     def tailor_cv(
         self,
         selected_content: SelectedContent,
-        job_requirements: JobRequirements
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
     ) -> TailoredCV:
         """
         Tailor CV content for a specific job.
@@ -76,6 +77,7 @@ class CVTailoringEngine:
         Args:
             selected_content: Pre-selected relevant content
             job_requirements: Job requirements
+            job_description: Original job description text (optional, for better context)
             
         Returns:
             TailoredCV with rewritten content
@@ -87,13 +89,15 @@ class CVTailoringEngine:
             tailored_summary = self._tailor_summary(
                 selected_content.summary,
                 job_requirements,
-                selected_content.job_match_summary
+                selected_content.job_match_summary,
+                job_description
             )
             tailoring_notes.append("Summary tailored to job requirements")
         else:
             tailored_summary = selected_content.summary or self._generate_summary(
                 selected_content,
-                job_requirements
+                job_requirements,
+                job_description
             )
             if not selected_content.summary:
                 tailoring_notes.append("Summary generated from scratch")
@@ -102,7 +106,8 @@ class CVTailoringEngine:
         if self.rewrite_achievements:
             tailored_experiences = self._tailor_experiences(
                 selected_content.experiences,
-                job_requirements
+                job_requirements,
+                job_description
             )
             tailoring_notes.append(f"Tailored {len(selected_content.experiences)} experiences")
         else:
@@ -128,12 +133,24 @@ class CVTailoringEngine:
         self,
         original_summary: str,
         job_requirements: JobRequirements,
-        job_match: Dict[str, Any]
+        job_match: Dict[str, Any],
+        job_description: Optional[str] = None
     ) -> str:
         """Tailor professional summary for the job."""
         
         # Build context
         matched_skills = ", ".join(job_match.get("matched_skills", [])[:5])
+        
+        # Include original job description if available
+        job_context = ""
+        if job_description:
+            # Truncate if too long (keep first 500 chars for context)
+            job_desc_preview = job_description[:500] + "..." if len(job_description) > 500 else job_description
+            job_context = f"""
+
+Original Job Posting:
+{job_desc_preview}
+"""
         
         prompt = f"""Rewrite this professional summary to emphasize relevance for a {job_requirements.title} position at {job_requirements.company or 'the company'}.
 
@@ -143,7 +160,7 @@ Original Summary:
 Job Requirements:
 - Title: {job_requirements.title}
 - Key Skills: {matched_skills}
-- Seniority: {job_requirements.seniority_level or 'Not specified'}
+- Seniority: {job_requirements.seniority_level or 'Not specified'}{job_context}
 
 CRITICAL INSTRUCTIONS:
 - Output ONLY the rewritten summary text
@@ -184,7 +201,8 @@ Output the rewritten summary text only:"""
     def _generate_summary(
         self,
         selected_content: SelectedContent,
-        job_requirements: JobRequirements
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
     ) -> str:
         """Generate a professional summary from scratch."""
         
@@ -196,13 +214,23 @@ Output the rewritten summary text only:"""
         # Get years of experience
         total_years = len(experiences) * 2  # Rough estimate
         
+        # Include original job description if available
+        job_context = ""
+        if job_description:
+            job_desc_preview = job_description[:500] + "..." if len(job_description) > 500 else job_description
+            job_context = f"""
+
+Job Posting Context:
+{job_desc_preview}
+"""
+        
         prompt = f"""Generate a professional summary for a {job_requirements.title} position.
 
 Candidate Background:
 - {len(experiences)} relevant positions
 - Approximately {total_years} years of experience
 - Key skills: {", ".join(skill_names)}
-- Target role: {job_requirements.title}
+- Target role: {job_requirements.title}{job_context}
 
 Instructions:
 1. Write a concise 2-3 sentence professional summary
@@ -231,7 +259,8 @@ Professional Summary:"""
     def _tailor_experiences(
         self,
         experiences: List[Dict[str, Any]],
-        job_requirements: JobRequirements
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """Tailor experience descriptions and achievements."""
         
@@ -248,7 +277,8 @@ Professional Summary:"""
                     tailored_text = self._tailor_achievement(
                         achievement["text"],
                         achievement.get("skills", []),
-                        job_requirements
+                        job_requirements,
+                        job_description
                     )
                     
                     tailored_achievement = achievement.copy()
@@ -265,7 +295,8 @@ Professional Summary:"""
         self,
         original_text: str,
         skills: List[str],
-        job_requirements: JobRequirements
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
     ) -> str:
         """Tailor a single achievement."""
         
@@ -279,6 +310,17 @@ Professional Summary:"""
         # Find matching skills
         matching_skills = [s for s in skills if s.lower() in [js.lower() for js in job_skills]]
         
+        # Include original job description if available
+        job_context = ""
+        if job_description:
+            # Truncate if too long (keep first 300 chars for context)
+            job_desc_preview = job_description[:300] + "..." if len(job_description) > 300 else job_description
+            job_context = f"""
+
+Job Posting Context:
+{job_desc_preview}
+"""
+        
         prompt = f"""Rewrite this achievement to emphasize relevance for a {job_requirements.title} position.
 
 Original Achievement:
@@ -286,7 +328,7 @@ Original Achievement:
 
 Achievement Skills: {", ".join(skills)}
 Job Requirements: {", ".join(job_skills[:5])}
-Matching Skills: {", ".join(matching_skills) if matching_skills else "None"}
+Matching Skills: {", ".join(matching_skills) if matching_skills else "None"}{job_context}
 
 CRITICAL INSTRUCTIONS:
 - Output ONLY the rewritten achievement text
