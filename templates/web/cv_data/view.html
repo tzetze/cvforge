@@ -62,11 +62,50 @@
                     </p>
                     {% if exp.description %}<p>{{ exp.description }}</p>{% endif %}
                     <p><strong>Achievements ({{ exp.achievements|length }}):</strong></p>
-                    <ul>
-                        {% for achievement in exp.achievements %}
-                        <li>{{ achievement.text }}</li>
-                        {% endfor %}
-                    </ul>
+                    {% for achievement in exp.achievements %}
+                    <div class="card mb-3 bg-light">
+                        <div class="card-body">
+                            <p class="mb-2">{{ achievement.text }}</p>
+                            <div class="mb-2">
+                                <strong>Skills:</strong>
+                                {% for skill in achievement.skills %}
+                                <span class="badge bg-primary me-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Impact:</strong>
+                                {% if achievement.impact.value == 'high' %}
+                                <span class="badge bg-success">High Impact</span>
+                                {% elif achievement.impact.value == 'medium' %}
+                                <span class="badge bg-warning text-dark">Medium Impact</span>
+                                {% else %}
+                                <span class="badge bg-info">Low Impact</span>
+                                {% endif %}
+                            </div>
+                            {% if achievement.metrics %}
+                            <div class="mb-2">
+                                <strong>Metrics:</strong>
+                                <div class="row g-2 mt-1">
+                                    {% for key, value in achievement.metrics.items() %}
+                                    <div class="col-md-6">
+                                        <small class="text-muted">{{ key|replace('_', ' ')|title }}:</small>
+                                        <strong>{{ value }}</strong>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if achievement.keywords %}
+                            <div>
+                                <strong>Keywords:</strong>
+                                {% for keyword in achievement.keywords %}
+                                <span class="badge bg-secondary me-1">{{ keyword }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
                 {% endfor %}
             </div>
@@ -84,14 +123,47 @@
             <div class="card-body">
                 {% if cv_data.skills.technical %}
                 <p><strong>Technical Skills:</strong></p>
-                <ul>
+                <div class="row">
                     {% for skill in cv_data.skills.technical %}
-                    <li>{{ skill.name }}{% if skill.level %} ({{ skill.level|format_enum }}){% endif %}</li>
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>
+                                {{ skill.name }}
+                                {% if skill.level %}
+                                {% if skill.level.value == 'expert' %}
+                                <span class="badge bg-success">Expert</span>
+                                {% elif skill.level.value == 'advanced' %}
+                                <span class="badge bg-primary">Advanced</span>
+                                {% elif skill.level.value == 'intermediate' %}
+                                <span class="badge bg-info">Intermediate</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Beginner</span>
+                                {% endif %}
+                                {% endif %}
+                            </span>
+                            {% if skill.years %}
+                            <small class="text-muted">{{ skill.years }} years</small>
+                            {% endif %}
+                        </div>
+                    </div>
                     {% endfor %}
-                </ul>
+                </div>
                 {% endif %}
                 {% if cv_data.skills.soft %}
-                <p><strong>Soft Skills:</strong> {{ cv_data.skills.soft|join(', ') }}</p>
+                <p class="mt-3"><strong>Soft Skills:</strong></p>
+                <p>
+                    {% for skill in cv_data.skills.soft %}
+                    <span class="badge bg-light text-dark border me-1">{{ skill }}</span>
+                    {% endfor %}
+                </p>
+                {% endif %}
+                {% if cv_data.skills.languages %}
+                <p class="mt-3"><strong>Languages:</strong></p>
+                <ul>
+                    {% for lang in cv_data.skills.languages %}
+                    <li>{{ lang.language }} - {{ lang.proficiency }}</li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
             </div>
         </div>
@@ -109,9 +181,228 @@
             <div class="card-body">
                 {% for edu in cv_data.education %}
                 <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                    <h6>{{ edu.degree }} in {{ edu.field }}</h6>
-                    <p class="text-muted">{{ edu.institution }} | {{ edu.graduation_date }}</p>
-                    {% if edu.gpa %}<p>GPA: {{ edu.gpa }}</p>{% endif %}
+                    <h6>
+                        {{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}
+                        {% if edu.status %}
+                        {% if edu.status.value == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                        {% elif edu.status.value == 'in-progress' %}
+                        <span class="badge bg-warning text-dark">In Progress</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Incomplete</span>
+                        {% endif %}
+                        {% endif %}
+                    </h6>
+                    <p class="text-muted">
+                        {{ edu.institution }}
+                        {% if edu.location %} | {{ edu.location }}{% endif %}
+                    </p>
+                    <p class="text-muted">
+                        {% if edu.start_date %}{{ edu.start_date }} - {% endif %}{{ edu.graduation_date or 'Present' }}
+                    </p>
+                    {% if edu.gpa %}<p><strong>GPA:</strong> {{ edu.gpa }}</p>{% endif %}
+                    {% if edu.honors %}
+                    <p><strong>Honors:</strong></p>
+                    <ul class="mb-2">
+                        {% for honor in edu.honors %}
+                        <li>{{ honor }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if edu.relevant_coursework %}
+                    <p><strong>Relevant Coursework:</strong></p>
+                    <ul class="mb-0">
+                        {% for course in edu.relevant_coursework %}
+                        <li>{{ course }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Certifications -->
+        {% if cv_data.certifications %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-award"></i> Certifications ({{ cv_data.certifications|length }})</h5>
+                <a href="{{ url_for('cv_data.edit_certifications') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                {% for cert in cv_data.certifications %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ cert.name }}</h6>
+                    <p class="text-muted">{{ cert.issuer }}</p>
+                    <p>
+                        <strong>Issued:</strong> {{ cert.date }}
+                        {% if cert.expiry %}
+                        | <strong>Expires:</strong> {{ cert.expiry }}
+                        {% set expiry_parts = cert.expiry.split('-') %}
+                        {% set expiry_year = expiry_parts[0]|int %}
+                        {% set expiry_month = expiry_parts[1]|int %}
+                        {% set current_year = 2026 %}
+                        {% set current_month = 3 %}
+                        {% if (expiry_year < current_year) or (expiry_year==current_year and expiry_month <
+                            current_month) %} <span class="badge bg-danger">Expired</span>
+                            {% else %}
+                            <span class="badge bg-success">Valid</span>
+                            {% endif %}
+                            {% endif %}
+                    </p>
+                    {% if cert.credential_id %}<p><strong>Credential ID:</strong> {{ cert.credential_id }}</p>{% endif
+                    %}
+                    {% if cert.url %}<p><a href="{{ cert.url }}" target="_blank">Verify Certification <i
+                                class="bi bi-box-arrow-up-right"></i></a></p>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Volunteer Work -->
+        {% if cv_data.volunteer %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-heart"></i> Volunteer Work ({{ cv_data.volunteer|length }})</h5>
+                <a href="{{ url_for('cv_data.edit_volunteer') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                {% for vol in cv_data.volunteer %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>
+                        {{ vol.role }} at {{ vol.organization }}
+                        {% if vol.type %}
+                        {% if vol.type.value == 'open-source' %}
+                        <span class="badge bg-primary">Open Source</span>
+                        {% elif vol.type.value == 'conference' %}
+                        <span class="badge bg-info">Conference</span>
+                        {% elif vol.type.value == 'meetup' %}
+                        <span class="badge bg-warning text-dark">Meetup</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Community</span>
+                        {% endif %}
+                        {% endif %}
+                    </h6>
+                    <p class="text-muted">{{ vol.start_date }} - {{ vol.end_date or 'Present' }}</p>
+                    {% if vol.description %}<p>{{ vol.description }}</p>{% endif %}
+                    {% if vol.achievements %}
+                    <p><strong>Achievements:</strong></p>
+                    <ul>
+                        {% for achievement in vol.achievements %}
+                        <li>{{ achievement }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Projects -->
+        {% if cv_data.projects %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-code-square"></i> Projects ({{ cv_data.projects|length }})</h5>
+                <a href="{{ url_for('cv_data.edit_projects') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                {% for project in cv_data.projects %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ project.name }}</h6>
+                    <p>{{ project.description }}</p>
+                    <p>
+                        <strong>Technologies:</strong>
+                        {% for tech in project.technologies %}
+                        <span class="badge bg-primary me-1">{{ tech }}</span>
+                        {% endfor %}
+                    </p>
+                    {% if project.start_date or project.end_date %}
+                    <p class="text-muted">
+                        {% if project.start_date %}{{ project.start_date }} - {% endif %}{{ project.end_date or
+                        'Present' }}
+                    </p>
+                    {% endif %}
+                    {% if project.url or project.github %}
+                    <p>
+                        {% if project.url %}
+                        <a href="{{ project.url }}" target="_blank" class="me-3">
+                            <i class="bi bi-globe"></i> Website
+                        </a>
+                        {% endif %}
+                        {% if project.github %}
+                        <a href="{{ project.github }}" target="_blank">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                        {% endif %}
+                    </p>
+                    {% endif %}
+                    {% if project.achievements %}
+                    <p><strong>Achievements:</strong></p>
+                    <ul>
+                        {% for achievement in project.achievements %}
+                        <li>{{ achievement }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Publications -->
+        {% if cv_data.publications %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-journal-text"></i> Publications ({{ cv_data.publications|length }})
+                </h5>
+                <a href="{{ url_for('cv_data.edit_publications') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                {% for pub in cv_data.publications %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ pub.title }}</h6>
+                    <p class="text-muted">{{ pub.venue }} | {{ pub.date }}</p>
+                    {% if pub.authors %}
+                    <p><strong>Authors:</strong> {{ pub.authors|join(', ') }}</p>
+                    {% endif %}
+                    {% if pub.description %}<p>{{ pub.description }}</p>{% endif %}
+                    {% if pub.url %}
+                    <p><a href="{{ pub.url }}" target="_blank">View Publication <i
+                                class="bi bi-box-arrow-up-right"></i></a></p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Awards -->
+        {% if cv_data.awards %}
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Awards & Recognition ({{ cv_data.awards|length }})</h5>
+                <a href="{{ url_for('cv_data.edit_awards') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+            <div class="card-body">
+                {% for award in cv_data.awards %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ award.title }}</h6>
+                    <p class="text-muted">{{ award.issuer }} | {{ award.date }}</p>
+                    {% if award.description %}<p>{{ award.description }}</p>{% endif %}
                 </div>
                 {% endfor %}
             </div>

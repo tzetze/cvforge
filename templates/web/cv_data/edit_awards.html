@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Awards - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Awards & Recognition</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Coming Soon:</strong> The awards editing interface is under development.
+            For now, please edit your awards directly in the YAML file.
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Current Awards</h5>
+            </div>
+            <div class="card-body">
+                {% if cv_data.awards %}
+                {% for award in cv_data.awards %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ award.title }}</h6>
+                    <p class="text-muted">{{ award.issuer }} | {{ award.date }}</p>
+                    {% if award.description %}<p>{{ award.description }}</p>{% endif %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">No awards added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to CV Data
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

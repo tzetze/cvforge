@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Projects - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Edit Projects</h2>
+
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Coming Soon:</strong> The projects editing interface is under development.
+            For now, please edit your projects directly in the YAML file.
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Current Projects</h5>
+            </div>
+            <div class="card-body">
+                {% if cv_data.projects %}
+                {% for project in cv_data.projects %}
+                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
+                    <h6>{{ project.name }}</h6>
+                    <p>{{ project.description }}</p>
+                    <p>
+                        <strong>Technologies:</strong>
+                        {% for tech in project.technologies %}
+                        <span class="badge bg-primary me-1">{{ tech }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">No projects added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to CV Data
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

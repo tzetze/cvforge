@@ -358,6 +358,106 @@ def edit_education():
         return redirect(url_for('cv_data.view'))
 
 
+@cv_data_bp.route('/edit/certifications', methods=['GET', 'POST'])
+def edit_certifications():
+    """Edit certifications."""
+    try:
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        cv_data = load_cv_data(str(cv_data_path))
+        
+        if request.method == 'POST':
+            # TODO: Implement certification editing
+            flash('Certification editing not yet implemented', 'info')
+            return redirect(url_for('cv_data.view'))
+        
+        return render_template('cv_data/edit_certifications.html', cv_data=cv_data)
+    
+    except Exception as e:
+        logger.error(f"Error editing certifications: {e}")
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('cv_data.view'))
+
+
+@cv_data_bp.route('/edit/volunteer', methods=['GET', 'POST'])
+def edit_volunteer():
+    """Edit volunteer work."""
+    try:
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        cv_data = load_cv_data(str(cv_data_path))
+        
+        if request.method == 'POST':
+            # TODO: Implement volunteer work editing
+            flash('Volunteer work editing not yet implemented', 'info')
+            return redirect(url_for('cv_data.view'))
+        
+        return render_template('cv_data/edit_volunteer.html', cv_data=cv_data)
+    
+    except Exception as e:
+        logger.error(f"Error editing volunteer work: {e}")
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('cv_data.view'))
+
+
+@cv_data_bp.route('/edit/projects', methods=['GET', 'POST'])
+def edit_projects():
+    """Edit projects."""
+    try:
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        cv_data = load_cv_data(str(cv_data_path))
+        
+        if request.method == 'POST':
+            # TODO: Implement projects editing
+            flash('Projects editing not yet implemented', 'info')
+            return redirect(url_for('cv_data.view'))
+        
+        return render_template('cv_data/edit_projects.html', cv_data=cv_data)
+    
+    except Exception as e:
+        logger.error(f"Error editing projects: {e}")
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('cv_data.view'))
+
+
+@cv_data_bp.route('/edit/publications', methods=['GET', 'POST'])
+def edit_publications():
+    """Edit publications."""
+    try:
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        cv_data = load_cv_data(str(cv_data_path))
+        
+        if request.method == 'POST':
+            # TODO: Implement publications editing
+            flash('Publications editing not yet implemented', 'info')
+            return redirect(url_for('cv_data.view'))
+        
+        return render_template('cv_data/edit_publications.html', cv_data=cv_data)
+    
+    except Exception as e:
+        logger.error(f"Error editing publications: {e}")
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('cv_data.view'))
+
+
+@cv_data_bp.route('/edit/awards', methods=['GET', 'POST'])
+def edit_awards():
+    """Edit awards."""
+    try:
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        cv_data = load_cv_data(str(cv_data_path))
+        
+        if request.method == 'POST':
+            # TODO: Implement awards editing
+            flash('Awards editing not yet implemented', 'info')
+            return redirect(url_for('cv_data.view'))
+        
+        return render_template('cv_data/edit_awards.html', cv_data=cv_data)
+    
+    except Exception as e:
+        logger.error(f"Error editing awards: {e}")
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('cv_data.view'))
+
+
 @cv_data_bp.route('/experiences')
 def list_experiences():
     """List all work experiences."""
@@ -405,6 +505,11 @@ def api_stats():
             'achievements': sum(len(exp.achievements) for exp in cv_data.experience),
             'skills': len(cv_data.skills.technical) if cv_data.skills and cv_data.skills.technical else 0,
             'education': len(cv_data.education) if cv_data.education else 0,
+            'certifications': len(cv_data.certifications) if cv_data.certifications else 0,
+            'volunteer': len(cv_data.volunteer) if cv_data.volunteer else 0,
+            'projects': len(cv_data.projects) if cv_data.projects else 0,
+            'publications': len(cv_data.publications) if cv_data.publications else 0,
+            'awards': len(cv_data.awards) if cv_data.awards else 0,
         }
         
         return jsonify(stats)
