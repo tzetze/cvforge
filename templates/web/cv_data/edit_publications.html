@@ -7,36 +7,143 @@
 
 <div class="row">
     <div class="col-lg-10 mx-auto">
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i>
-            <strong>Coming Soon:</strong> The publications editing interface is under development.
-            For now, please edit your publications directly in the YAML file.
-        </div>
-
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Current Publications</h5>
+                <h5 class="mb-0"><i class="bi bi-journal-text"></i> Academic & Professional Publications</h5>
             </div>
             <div class="card-body">
-                {% if cv_data.publications %}
-                {% for pub in cv_data.publications %}
-                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                    <h6>{{ pub.title }}</h6>
-                    <p class="text-muted">{{ pub.venue }} | {{ pub.date }}</p>
-                    {% if pub.authors %}<p><strong>Authors:</strong> {{ pub.authors|join(', ') }}</p>{% endif %}
-                </div>
-                {% endfor %}
-                {% else %}
-                <p class="text-muted">No publications added yet.</p>
-                {% endif %}
-            </div>
-        </div>
+                <form method="POST" action="{{ url_for('cv_data.edit_publications') }}">
 
-        <div class="text-center">
-            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to CV Data
-            </a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0">Add your published articles, papers, and research</p>
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                            onclick="CVFormManager.addItem('publications-container', 'publication-template', 'publication-item')">
+                            <i class="bi bi-plus-circle"></i> Add Publication
+                        </button>
+                    </div>
+
+                    <div id="publications-container">
+                        {% if cv_data.publications %}
+                        {% for pub in cv_data.publications %}
+                        <div class="publication-item card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Publication Title <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="publications[{{ loop.index0 }}][title]" value="{{ pub.title }}"
+                                            required>
+                                    </div>
+                                    <div class="col-md-8 mb-3">
+                                        <label class="form-label">Venue (Journal/Conference) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="publications[{{ loop.index0 }}][venue]" value="{{ pub.venue }}"
+                                            placeholder="e.g., IEEE Software Magazine" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Publication Date (YYYY-MM) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="publications[{{ loop.index0 }}][date]" value="{{ pub.date }}"
+                                            pattern="\d{4}-\d{2}" placeholder="2023-05" required>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Authors</label>
+                                        <input type="text" class="form-control"
+                                            name="publications[{{ loop.index0 }}][authors]"
+                                            value="{% if pub.authors %}{{ pub.authors|join(', ') }}{% endif %}"
+                                            placeholder="John Doe, Jane Smith (comma-separated)">
+                                        <small class="text-muted">Separate author names with commas</small>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">DOI or Publication URL</label>
+                                        <input type="url" class="form-control"
+                                            name="publications[{{ loop.index0 }}][url]" value="{{ pub.url or '' }}"
+                                            placeholder="https://doi.org/... or https://...">
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control"
+                                            name="publications[{{ loop.index0 }}][description]"
+                                            rows="3">{{ pub.description or '' }}</textarea>
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            onclick="CVFormManager.removeItem(this, 'publication-item')">
+                                            <i class="bi bi-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No publications yet. Click "Add Publication" to add one.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Template for new publication -->
+<template id="publication-template">
+    <div class="publication-item card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Publication Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="publications[{INDEX}][title]" required>
+                </div>
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">Venue (Journal/Conference) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="publications[{INDEX}][venue]"
+                        placeholder="e.g., IEEE Software Magazine" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Publication Date (YYYY-MM) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="publications[{INDEX}][date]" pattern="\d{4}-\d{2}"
+                        placeholder="2023-05" required>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Authors</label>
+                    <input type="text" class="form-control" name="publications[{INDEX}][authors]"
+                        placeholder="John Doe, Jane Smith (comma-separated)">
+                    <small class="text-muted">Separate author names with commas</small>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">DOI or Publication URL</label>
+                    <input type="url" class="form-control" name="publications[{INDEX}][url]"
+                        placeholder="https://doi.org/... or https://...">
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="publications[{INDEX}][description]" rows="3"></textarea>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="button" class="btn btn-outline-danger"
+                        onclick="CVFormManager.removeItem(this, 'publication-item')">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
 {% endblock %}

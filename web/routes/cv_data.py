@@ -366,8 +366,36 @@ def edit_certifications():
         cv_data = load_cv_data(str(cv_data_path))
         
         if request.method == 'POST':
-            # TODO: Implement certification editing
-            flash('Certification editing not yet implemented', 'info')
+            from core.models import Certification
+            
+            certifications = []
+            cert_count = 0
+            
+            while f'certifications[{cert_count}][name]' in request.form:
+                name = request.form.get(f'certifications[{cert_count}][name]', '').strip()
+                issuer = request.form.get(f'certifications[{cert_count}][issuer]', '').strip()
+                
+                if name and issuer:
+                    date = request.form.get(f'certifications[{cert_count}][date]', '').strip()
+                    expiry = request.form.get(f'certifications[{cert_count}][expiry]', '').strip() or None
+                    credential_id = request.form.get(f'certifications[{cert_count}][credential_id]', '').strip() or None
+                    url = request.form.get(f'certifications[{cert_count}][url]', '').strip() or None
+                    
+                    certification = Certification(
+                        name=name,
+                        issuer=issuer,
+                        date=date,
+                        expiry=expiry,
+                        credential_id=credential_id,
+                        url=url
+                    )
+                    certifications.append(certification)
+                
+                cert_count += 1
+            
+            cv_data.certifications = certifications if certifications else None
+            save_cv_data(cv_data, str(cv_data_path))
+            flash('Certifications updated successfully', 'success')
             return redirect(url_for('cv_data.view'))
         
         return render_template('cv_data/edit_certifications.html', cv_data=cv_data)
@@ -386,8 +414,42 @@ def edit_volunteer():
         cv_data = load_cv_data(str(cv_data_path))
         
         if request.method == 'POST':
-            # TODO: Implement volunteer work editing
-            flash('Volunteer work editing not yet implemented', 'info')
+            from core.models import VolunteerWork, VolunteerType
+            
+            volunteer_list = []
+            vol_count = 0
+            
+            while f'volunteer[{vol_count}][organization]' in request.form:
+                organization = request.form.get(f'volunteer[{vol_count}][organization]', '').strip()
+                role = request.form.get(f'volunteer[{vol_count}][role]', '').strip()
+                
+                if organization and role:
+                    start_date = request.form.get(f'volunteer[{vol_count}][start_date]', '').strip()
+                    end_date = request.form.get(f'volunteer[{vol_count}][end_date]', '').strip() or None
+                    description = request.form.get(f'volunteer[{vol_count}][description]', '').strip() or None
+                    type_str = request.form.get(f'volunteer[{vol_count}][type]', '').strip()
+                    vol_type = VolunteerType(type_str) if type_str else None
+                    
+                    # Parse achievements (one per line)
+                    achievements_text = request.form.get(f'volunteer[{vol_count}][achievements]', '').strip()
+                    achievements = [a.strip() for a in achievements_text.split('\n') if a.strip()] if achievements_text else None
+                    
+                    volunteer = VolunteerWork(
+                        organization=organization,
+                        role=role,
+                        start_date=start_date,
+                        end_date=end_date,
+                        description=description,
+                        achievements=achievements,
+                        type=vol_type
+                    )
+                    volunteer_list.append(volunteer)
+                
+                vol_count += 1
+            
+            cv_data.volunteer = volunteer_list if volunteer_list else None
+            save_cv_data(cv_data, str(cv_data_path))
+            flash('Volunteer work updated successfully', 'success')
             return redirect(url_for('cv_data.view'))
         
         return render_template('cv_data/edit_volunteer.html', cv_data=cv_data)
@@ -406,8 +468,46 @@ def edit_projects():
         cv_data = load_cv_data(str(cv_data_path))
         
         if request.method == 'POST':
-            # TODO: Implement projects editing
-            flash('Projects editing not yet implemented', 'info')
+            from core.models import Project
+            
+            projects = []
+            proj_count = 0
+            
+            while f'projects[{proj_count}][name]' in request.form:
+                name = request.form.get(f'projects[{proj_count}][name]', '').strip()
+                description = request.form.get(f'projects[{proj_count}][description]', '').strip()
+                
+                if name and description:
+                    # Parse technologies (comma-separated)
+                    tech_str = request.form.get(f'projects[{proj_count}][technologies]', '').strip()
+                    technologies = [t.strip() for t in tech_str.split(',') if t.strip()]
+                    
+                    url = request.form.get(f'projects[{proj_count}][url]', '').strip() or None
+                    github = request.form.get(f'projects[{proj_count}][github]', '').strip() or None
+                    start_date = request.form.get(f'projects[{proj_count}][start_date]', '').strip() or None
+                    end_date = request.form.get(f'projects[{proj_count}][end_date]', '').strip() or None
+                    
+                    # Parse achievements (one per line)
+                    achievements_text = request.form.get(f'projects[{proj_count}][achievements]', '').strip()
+                    achievements = [a.strip() for a in achievements_text.split('\n') if a.strip()] if achievements_text else None
+                    
+                    project = Project(
+                        name=name,
+                        description=description,
+                        technologies=technologies,
+                        url=url,
+                        github=github,
+                        achievements=achievements,
+                        start_date=start_date,
+                        end_date=end_date
+                    )
+                    projects.append(project)
+                
+                proj_count += 1
+            
+            cv_data.projects = projects if projects else None
+            save_cv_data(cv_data, str(cv_data_path))
+            flash('Projects updated successfully', 'success')
             return redirect(url_for('cv_data.view'))
         
         return render_template('cv_data/edit_projects.html', cv_data=cv_data)
@@ -426,8 +526,40 @@ def edit_publications():
         cv_data = load_cv_data(str(cv_data_path))
         
         if request.method == 'POST':
-            # TODO: Implement publications editing
-            flash('Publications editing not yet implemented', 'info')
+            from core.models import Publication
+            
+            publications = []
+            pub_count = 0
+            
+            while f'publications[{pub_count}][title]' in request.form:
+                title = request.form.get(f'publications[{pub_count}][title]', '').strip()
+                venue = request.form.get(f'publications[{pub_count}][venue]', '').strip()
+                
+                if title and venue:
+                    date = request.form.get(f'publications[{pub_count}][date]', '').strip()
+                    
+                    # Parse authors (comma-separated)
+                    authors_str = request.form.get(f'publications[{pub_count}][authors]', '').strip()
+                    authors = [a.strip() for a in authors_str.split(',') if a.strip()] if authors_str else None
+                    
+                    url = request.form.get(f'publications[{pub_count}][url]', '').strip() or None
+                    description = request.form.get(f'publications[{pub_count}][description]', '').strip() or None
+                    
+                    publication = Publication(
+                        title=title,
+                        venue=venue,
+                        date=date,
+                        authors=authors,
+                        url=url,
+                        description=description
+                    )
+                    publications.append(publication)
+                
+                pub_count += 1
+            
+            cv_data.publications = publications if publications else None
+            save_cv_data(cv_data, str(cv_data_path))
+            flash('Publications updated successfully', 'success')
             return redirect(url_for('cv_data.view'))
         
         return render_template('cv_data/edit_publications.html', cv_data=cv_data)
@@ -446,8 +578,32 @@ def edit_awards():
         cv_data = load_cv_data(str(cv_data_path))
         
         if request.method == 'POST':
-            # TODO: Implement awards editing
-            flash('Awards editing not yet implemented', 'info')
+            from core.models import Award
+            
+            awards = []
+            award_count = 0
+            
+            while f'awards[{award_count}][title]' in request.form:
+                title = request.form.get(f'awards[{award_count}][title]', '').strip()
+                issuer = request.form.get(f'awards[{award_count}][issuer]', '').strip()
+                
+                if title and issuer:
+                    date = request.form.get(f'awards[{award_count}][date]', '').strip()
+                    description = request.form.get(f'awards[{award_count}][description]', '').strip() or None
+                    
+                    award = Award(
+                        title=title,
+                        issuer=issuer,
+                        date=date,
+                        description=description
+                    )
+                    awards.append(award)
+                
+                award_count += 1
+            
+            cv_data.awards = awards if awards else None
+            save_cv_data(cv_data, str(cv_data_path))
+            flash('Awards updated successfully', 'success')
             return redirect(url_for('cv_data.view'))
         
         return render_template('cv_data/edit_awards.html', cv_data=cv_data)

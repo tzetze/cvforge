@@ -7,36 +7,113 @@
 
 <div class="row">
     <div class="col-lg-10 mx-auto">
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i>
-            <strong>Coming Soon:</strong> The awards editing interface is under development.
-            For now, please edit your awards directly in the YAML file.
-        </div>
-
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Current Awards</h5>
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Awards & Recognition</h5>
             </div>
             <div class="card-body">
-                {% if cv_data.awards %}
-                {% for award in cv_data.awards %}
-                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                    <h6>{{ award.title }}</h6>
-                    <p class="text-muted">{{ award.issuer }} | {{ award.date }}</p>
-                    {% if award.description %}<p>{{ award.description }}</p>{% endif %}
-                </div>
-                {% endfor %}
-                {% else %}
-                <p class="text-muted">No awards added yet.</p>
-                {% endif %}
-            </div>
-        </div>
+                <form method="POST" action="{{ url_for('cv_data.edit_awards') }}">
 
-        <div class="text-center">
-            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to CV Data
-            </a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0">Add your professional awards and recognition</p>
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                            onclick="CVFormManager.addItem('awards-container', 'award-template', 'award-item')">
+                            <i class="bi bi-plus-circle"></i> Add Award
+                        </button>
+                    </div>
+
+                    <div id="awards-container">
+                        {% if cv_data.awards %}
+                        {% for award in cv_data.awards %}
+                        <div class="award-item card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Award Title <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="awards[{{ loop.index0 }}][title]"
+                                            value="{{ award.title }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Issuing Organization <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="awards[{{ loop.index0 }}][issuer]"
+                                            value="{{ award.issuer }}" required>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Award Date (YYYY-MM) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="awards[{{ loop.index0 }}][date]"
+                                            value="{{ award.date }}" pattern="\d{4}-\d{2}" placeholder="2023-12"
+                                            required>
+                                    </div>
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" name="awards[{{ loop.index0 }}][description]"
+                                            rows="3">{{ award.description or '' }}</textarea>
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            onclick="CVFormManager.removeItem(this, 'award-item')">
+                                            <i class="bi bi-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No awards yet. Click "Add Award" to add one.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Template for new award -->
+<template id="award-template">
+    <div class="award-item card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Award Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="awards[{INDEX}][title]" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Issuing Organization <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="awards[{INDEX}][issuer]" required>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Award Date (YYYY-MM) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="awards[{INDEX}][date]" pattern="\d{4}-\d{2}"
+                        placeholder="2023-12" required>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="awards[{INDEX}][description]" rows="3"></textarea>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="button" class="btn btn-outline-danger"
+                        onclick="CVFormManager.removeItem(this, 'award-item')">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
 {% endblock %}

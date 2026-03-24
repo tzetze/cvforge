@@ -7,36 +7,165 @@
 
 <div class="row">
     <div class="col-lg-10 mx-auto">
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i>
-            <strong>Coming Soon:</strong> The volunteer work editing interface is under development.
-            For now, please edit your volunteer work directly in the YAML file.
-        </div>
-
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Current Volunteer Work</h5>
+                <h5 class="mb-0"><i class="bi bi-heart"></i> Volunteer Work & Community Involvement</h5>
             </div>
             <div class="card-body">
-                {% if cv_data.volunteer %}
-                {% for vol in cv_data.volunteer %}
-                <div class="mb-3 {% if not loop.last %}border-bottom pb-3{% endif %}">
-                    <h6>{{ vol.role }} at {{ vol.organization }}</h6>
-                    <p class="text-muted">{{ vol.start_date }} - {{ vol.end_date or 'Present' }}</p>
-                    {% if vol.description %}<p>{{ vol.description }}</p>{% endif %}
-                </div>
-                {% endfor %}
-                {% else %}
-                <p class="text-muted">No volunteer work added yet.</p>
-                {% endif %}
-            </div>
-        </div>
+                <form method="POST" action="{{ url_for('cv_data.edit_volunteer') }}">
 
-        <div class="text-center">
-            <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to CV Data
-            </a>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <p class="text-muted mb-0">Add your volunteer work and community involvement</p>
+                        <button type="button" class="btn btn-sm btn-outline-success"
+                            onclick="CVFormManager.addItem('volunteer-container', 'volunteer-template', 'volunteer-item')">
+                            <i class="bi bi-plus-circle"></i> Add Volunteer Work
+                        </button>
+                    </div>
+
+                    <div id="volunteer-container">
+                        {% if cv_data.volunteer %}
+                        {% for vol in cv_data.volunteer %}
+                        <div class="volunteer-item card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Organization <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="volunteer[{{ loop.index0 }}][organization]"
+                                            value="{{ vol.organization }}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Role/Position <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="volunteer[{{ loop.index0 }}][role]" value="{{ vol.role }}" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Start Date (YYYY-MM) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            name="volunteer[{{ loop.index0 }}][start_date]" value="{{ vol.start_date }}"
+                                            pattern="\d{4}-\d{2}" placeholder="2020-01" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">End Date (YYYY-MM or 'present')</label>
+                                        <input type="text" class="form-control"
+                                            name="volunteer[{{ loop.index0 }}][end_date]"
+                                            value="{{ vol.end_date or '' }}" placeholder="present or 2023-12">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Type</label>
+                                        <select class="form-select" name="volunteer[{{ loop.index0 }}][type]">
+                                            <option value="">Not specified</option>
+                                            <option value="open-source" {% if vol.type and vol.type.value=='open-source'
+                                                %}selected{% endif %}>Open Source</option>
+                                            <option value="conference" {% if vol.type and vol.type.value=='conference'
+                                                %}selected{% endif %}>Conference</option>
+                                            <option value="meetup" {% if vol.type and vol.type.value=='meetup'
+                                                %}selected{% endif %}>Meetup</option>
+                                            <option value="community" {% if vol.type and vol.type.value=='community'
+                                                %}selected{% endif %}>Community</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" name="volunteer[{{ loop.index0 }}][description]"
+                                            rows="2">{{ vol.description or '' }}</textarea>
+                                    </div>
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label">Achievements (one per line)</label>
+                                        <textarea class="form-control" name="volunteer[{{ loop.index0 }}][achievements]"
+                                            rows="4"
+                                            placeholder="Enter each achievement on a new line">{% if vol.achievements %}{{ vol.achievements|join('\n') }}{% endif %}</textarea>
+                                        <small class="text-muted">Each line will be saved as a separate
+                                            achievement</small>
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        <button type="button" class="btn btn-outline-danger"
+                                            onclick="CVFormManager.removeItem(this, 'volunteer-item')">
+                                            <i class="bi bi-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No volunteer work yet. Click "Add Volunteer Work" to add
+                            one.
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('cv_data.view') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Template for new volunteer work -->
+<template id="volunteer-template">
+    <div class="volunteer-item card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Organization <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="volunteer[{INDEX}][organization]" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Role/Position <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="volunteer[{INDEX}][role]" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Start Date (YYYY-MM) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="volunteer[{INDEX}][start_date]" pattern="\d{4}-\d{2}"
+                        placeholder="2020-01" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">End Date (YYYY-MM or 'present')</label>
+                    <input type="text" class="form-control" name="volunteer[{INDEX}][end_date]"
+                        placeholder="present or 2023-12">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Type</label>
+                    <select class="form-select" name="volunteer[{INDEX}][type]">
+                        <option value="">Not specified</option>
+                        <option value="open-source">Open Source</option>
+                        <option value="conference">Conference</option>
+                        <option value="meetup">Meetup</option>
+                        <option value="community" selected>Community</option>
+                    </select>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="volunteer[{INDEX}][description]" rows="2"></textarea>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Achievements (one per line)</label>
+                    <textarea class="form-control" name="volunteer[{INDEX}][achievements]" rows="4"
+                        placeholder="Enter each achievement on a new line"></textarea>
+                    <small class="text-muted">Each line will be saved as a separate achievement</small>
+                </div>
+                <div class="col-12 text-end">
+                    <button type="button" class="btn btn-outline-danger"
+                        onclick="CVFormManager.removeItem(this, 'volunteer-item')">
+                        <i class="bi bi-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="{{ url_for('static', filename='js/cv_form_manager.js') }}"></script>
 {% endblock %}
