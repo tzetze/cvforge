@@ -341,6 +341,10 @@ CRITICAL INSTRUCTIONS:
 - Keep it concise (1-2 sentences)
 - Do NOT add false metrics or exaggerate
 - Maintain the same level of impact
+- VARY your word choice - avoid repeating the same words across different achievements
+- Use diverse vocabulary and phrasing to keep each achievement distinct
+- Do NOT overuse words like "independently", "proactively", "successfully" etc.
+- Each achievement should sound unique and professional
 
 Output the rewritten achievement text only:"""
         
