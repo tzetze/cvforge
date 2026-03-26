@@ -81,6 +81,9 @@ def job_input():
                 flash(f'Error scraping job: {str(e)}', 'danger')
                 return redirect(url_for('generate.job_input'))
     
+    # GET request - show the form
+    return render_template('generate/job_input.html')
+    
 
 @generate_bp.route('/tailor-all')
 def tailor_all():

@@ -105,7 +105,7 @@
                         <p class="text-muted">Experiences Tailored</p>
                     </div>
                     <div class="col-md-4">
-                        {% set total_achievements = experiences|sum(attribute='achievements')|length %}
+                        {% set total_achievements = experiences|map(attribute='achievements')|map('length')|sum %}
                         <h3>{{ total_achievements }}</h3>
                         <p class="text-muted">Achievements Tailored</p>
                     </div>
