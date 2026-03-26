@@ -129,9 +129,33 @@ def analyze():
             job_info = parser.parse({'description': job_description})
             session['parser_type'] = 'traditional'
         
-        # Score achievements
-        scorer = AchievementScorer()
-        selector = CVContentSelector(scorer)
+        # Load settings to get configuration
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        # Build selector config from settings
+        cv_gen = settings.cv_generation
+        selector_config = {
+            'max_achievements_per_job': cv_gen.get('max_achievements_per_job', 5),
+            'min_achievement_score': cv_gen.get('min_achievement_score', 0.3),
+            'include_volunteer': cv_gen.get('include_volunteer', True),
+            'include_projects': cv_gen.get('include_projects', True),
+            'include_publications': cv_gen.get('include_publications', True),
+            'include_awards': cv_gen.get('include_awards', True),
+            'max_pages': cv_gen.get('max_pages', 2)
+        }
+        
+        # Score achievements with settings-based weights
+        scorer_weights = {
+            'keyword_match': settings.scoring.keyword_match,
+            'skill_match': settings.scoring.skill_match,
+            'impact_level': settings.scoring.impact_level,
+            'recency': settings.scoring.recency,
+            'semantic_similarity': settings.scoring.semantic_similarity
+        }
+        scorer = AchievementScorer(weights=scorer_weights)
+        selector = CVContentSelector(scorer, config=selector_config)
         
         # Enable verbose analysis
         selected_content = selector.select_content(
@@ -339,8 +363,33 @@ def download():
         parser = JobDescriptionParser()
         job_info = parser.parse({'description': job_description})
         
-        scorer = AchievementScorer()
-        selector = CVContentSelector(scorer)
+        # Load settings to get configuration
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        # Build selector config from settings
+        cv_gen = settings.cv_generation
+        selector_config = {
+            'max_achievements_per_job': cv_gen.get('max_achievements_per_job', 5),
+            'min_achievement_score': cv_gen.get('min_achievement_score', 0.3),
+            'include_volunteer': cv_gen.get('include_volunteer', True),
+            'include_projects': cv_gen.get('include_projects', True),
+            'include_publications': cv_gen.get('include_publications', True),
+            'include_awards': cv_gen.get('include_awards', True),
+            'max_pages': cv_gen.get('max_pages', 2)
+        }
+        
+        # Score achievements with settings-based weights
+        scorer_weights = {
+            'keyword_match': settings.scoring.keyword_match,
+            'skill_match': settings.scoring.skill_match,
+            'impact_level': settings.scoring.impact_level,
+            'recency': settings.scoring.recency,
+            'semantic_similarity': settings.scoring.semantic_similarity
+        }
+        scorer = AchievementScorer(weights=scorer_weights)
+        selector = CVContentSelector(scorer, config=selector_config)
         
         selected_content = selector.select_content(
             cv_data=cv_data,
