@@ -1,4 +1,4 @@
-"""
+    """
 CV Generation routes.
 
 Handles job input, CV generation workflow, and PDF download.
@@ -51,7 +51,8 @@ def job_input():
             logger.info(f"Session data: {dict(session)}")
             
             flash('Job description saved', 'success')
-            return redirect(url_for('generate.analyze'))
+            # Redirect to tailor-all instead of analyze
+            return redirect(url_for('generate.tailor_all'))
         
         elif input_type == 'linkedin':
             linkedin_url = request.form.get('linkedin_url', '')
@@ -73,25 +74,20 @@ def job_input():
                 session['job_url'] = linkedin_url
                 
                 flash('Job scraped successfully from LinkedIn', 'success')
-                return redirect(url_for('generate.analyze'))
+                return redirect(url_for('generate.tailor_all'))
             
             except Exception as e:
                 logger.error(f"Error scraping LinkedIn job: {e}")
                 flash(f'Error scraping job: {str(e)}', 'danger')
                 return redirect(url_for('generate.job_input'))
     
-    return render_template('generate/job_input.html')
 
-
-@generate_bp.route('/analyze')
-def analyze():
-    """Analyze job requirements and show match score."""
+@generate_bp.route('/tailor-all')
+def tailor_all():
+    """Tailor all achievements upfront before scoring/selection."""
     try:
         # Get job description from session
-        logger.info(f"Analyze route - Session keys: {list(session.keys())}")
-        logger.info(f"Analyze route - Full session: {dict(session)}")
         job_description = session.get('job_description')
-        logger.info(f"Retrieved job_description: {job_description[:100] if job_description else 'None'}...")
         
         if not job_description:
             flash('No job description found. Please input a job first.', 'warning')
@@ -103,7 +99,6 @@ def analyze():
         
         # Parse job description with AI (with fallback to traditional parser)
         try:
-            # Try to use AI parser if LLM is configured
             from core.data_manager import DataManager
             data_manager = DataManager()
             settings = data_manager.load_settings()
@@ -120,14 +115,159 @@ def analyze():
                 'title': session.get('job_title'),
                 'company': session.get('job_company')
             })
-            session['parser_type'] = 'ai'
             
         except Exception as e:
             # Fall back to traditional parser
             logger.warning(f"AI parser failed, falling back to traditional parser: {e}")
             parser = JobDescriptionParser()
             job_info = parser.parse({'description': job_description})
-            session['parser_type'] = 'traditional'
+        
+        # Store job info in session
+        session['job_info'] = {
+            'title': job_info.title,
+            'company': job_info.company,
+            'required_skills': job_info.required_skills,
+            'preferred_skills': job_info.preferred_skills,
+            'keywords': list(job_info.keywords) if job_info.keywords else []
+        }
+        
+        # Load settings for tailoring config
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        # Initialize LLM for tailoring
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Pass cv_generation config to tailoring engine
+        cv_gen = settings.cv_generation
+        tailor_config = {
+            'max_achievement_words': cv_gen.get('max_achievement_words', 25),
+            'rewrite_achievements': cv_gen.get('rewrite_achievements', True),
+            'rewrite_summary': cv_gen.get('rewrite_summary', True),
+            'max_summary_length': cv_gen.get('max_summary_length', 150)
+        }
+        
+        # Tailor ALL achievements
+        tailor = CVTailoringEngine(llm, config=tailor_config)
+        tailored_cv_data = tailor.tailor_all_achievements(
+            cv_data=cv_data,
+            job_requirements=job_info,
+            job_description=job_description
+        )
+        
+        # Serialize tailored CV data to session
+        # Convert CVData to dict for session storage
+        tailored_cv_dict = tailored_cv_data.model_dump(mode='json')
+        session['tailored_cv_data'] = tailored_cv_dict
+        
+        flash('All achievements tailored successfully', 'success')
+        return redirect(url_for('generate.review_tailored'))
+    
+    except Exception as e:
+        logger.error(f"Error tailoring achievements: {e}", exc_info=True)
+        flash(f'Error tailoring CV: {str(e)}', 'danger')
+        return redirect(url_for('generate.job_input'))
+
+
+@generate_bp.route('/review-tailored')
+def review_tailored():
+    """Review tailored achievements before scoring/selection."""
+    try:
+        # Get tailored CV data from session
+        tailored_cv_dict = session.get('tailored_cv_data')
+        job_info_dict = session.get('job_info', {})
+        
+        if not tailored_cv_dict:
+            flash('No tailored CV found. Please start the workflow again.', 'warning')
+            return redirect(url_for('generate.job_input'))
+        
+        # Load original CV data for comparison
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        from core.models import CVData
+        original_cv_data = load_cv_data(str(cv_data_path))
+        
+        # Reconstruct tailored CV data from dict
+        tailored_cv_data = CVData(**tailored_cv_dict)
+        
+        # Prepare comparison data for template
+        experiences_comparison = []
+        for i, tailored_exp in enumerate(tailored_cv_data.experience):
+            original_exp = original_cv_data.experience[i] if i < len(original_cv_data.experience) else None
+            
+            if original_exp:
+                achievements_comparison = []
+                for j, tailored_ach in enumerate(tailored_exp.achievements):
+                    original_ach = original_exp.achievements[j] if j < len(original_exp.achievements) else None
+                    
+                    # Extract original text from keywords metadata
+                    original_text = None
+                    if tailored_ach.keywords:
+                        for keyword in tailored_ach.keywords:
+                            if isinstance(keyword, str) and keyword.startswith("__original__:"):
+                                original_text = keyword[len("__original__:"):]
+                                break
+                    
+                    # Fallback to original achievement if metadata not found
+                    if not original_text and original_ach:
+                        original_text = original_ach.text
+                    
+                    achievements_comparison.append({
+                        'original': original_text or tailored_ach.text,
+                        'tailored': tailored_ach.text,
+                        'skills': tailored_ach.skills
+                    })
+                
+                experiences_comparison.append({
+                    'company': tailored_exp.company,
+                    'position': tailored_exp.position,
+                    'achievements': achievements_comparison
+                })
+        
+        return render_template(
+            'generate/review_tailored.html',
+            experiences=experiences_comparison,
+            job_title=job_info_dict.get('title', 'the position'),
+            job_company=job_info_dict.get('company', 'the company')
+        )
+    
+    except Exception as e:
+        logger.error(f"Error reviewing tailored content: {e}", exc_info=True)
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('generate.job_input'))
+
+    return render_template('generate/job_input.html')
+
+
+@generate_bp.route('/analyze')
+def analyze():
+    """Analyze job requirements and show match score (using TAILORED CV data)."""
+    try:
+        # Get tailored CV data from session
+        tailored_cv_dict = session.get('tailored_cv_data')
+        job_info_dict = session.get('job_info', {})
+        
+        if not tailored_cv_dict:
+            flash('No tailored CV found. Please start the workflow again.', 'warning')
+            return redirect(url_for('generate.job_input'))
+        
+        # Load original CV data for personal info
+        cv_data_path = current_app.config['CV_DATA_PATH']
+        original_cv_data = load_cv_data(str(cv_data_path))
+        
+        # Reconstruct tailored CV data from session
+        from core.models import CVData
+        tailored_cv_data = CVData(**tailored_cv_dict)
+        
+        # Reconstruct job_info from session
+        job_info = JobRequirements(
+            title=job_info_dict.get('title'),
+            company=job_info_dict.get('company'),
+            required_skills=job_info_dict.get('required_skills', []),
+            preferred_skills=job_info_dict.get('preferred_skills', []),
+            keywords=set(job_info_dict.get('keywords', []))
+        )
         
         # Load settings to get configuration
         from core.data_manager import DataManager
@@ -157,19 +297,13 @@ def analyze():
         scorer = AchievementScorer(weights=scorer_weights)
         selector = CVContentSelector(scorer, config=selector_config)
         
-        # Enable verbose analysis
+        # Score and select from TAILORED CV data (not original)
+        logger.info("Scoring tailored achievements")
         selected_content = selector.select_content(
-            cv_data=cv_data,
+            cv_data=tailored_cv_data,  # Use tailored version
             job_requirements=job_info,
             verbose=True
         )
-        
-        # Store in session for later use
-        session['job_info'] = {
-            'required_skills': job_info.required_skills,
-            'preferred_skills': job_info.preferred_skills,
-            'keywords': list(job_info.keywords) if job_info.keywords else []
-        }
         
         # Store selected content in session (already in dict format from selector)
         session['selected_experiences'] = selected_content.experiences
@@ -194,7 +328,7 @@ def analyze():
             'generate/analyze.html',
             job_info=job_info,
             selected_content=selected_content,
-            cv_data=cv_data
+            cv_data=tailored_cv_data  # Pass tailored CV data to template
         )
     
     except Exception as e:
