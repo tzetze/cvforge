@@ -22,6 +22,65 @@
                 position.</small>
         </div>
 
+        <!-- Job Requirements Summary (Collapsible) -->
+        {% if job_info %}
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <a class="text-decoration-none text-dark" data-bs-toggle="collapse" href="#jobRequirements"
+                        role="button" aria-expanded="false" aria-controls="jobRequirements">
+                        <i class="bi bi-chevron-down"></i> Job Requirements Summary
+                        <small class="text-muted">(Click to expand)</small>
+                    </a>
+                </h6>
+            </div>
+            <div class="collapse" id="jobRequirements">
+                <div class="card-body">
+                    <div class="row">
+                        {% if job_info.required_skills %}
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="bi bi-check-circle text-danger"></i> Required Skills</h6>
+                            <div>
+                                {% for skill in job_info.required_skills %}
+                                <span class="badge bg-danger me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if job_info.preferred_skills %}
+                        <div class="col-md-6 mb-3">
+                            <h6><i class="bi bi-star text-warning"></i> Preferred Skills</h6>
+                            <div>
+                                {% for skill in job_info.preferred_skills %}
+                                <span class="badge bg-warning me-1 mb-1">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if job_info.keywords %}
+                    <div class="mt-3">
+                        <h6><i class="bi bi-tags text-info"></i> Key Terms</h6>
+                        <div>
+                            {% for keyword in job_info.keywords %}
+                            <span class="badge bg-info me-1 mb-1">{{ keyword }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-light mt-3 mb-0">
+                        <small><i class="bi bi-lightbulb"></i> <strong>Note:</strong> These requirements were extracted
+                            by AI from the job description. Achievements were tailored to emphasize these skills and
+                            keywords.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Experiences with Side-by-Side Comparison -->
         {% for exp in experiences %}
         <div class="card mb-4">

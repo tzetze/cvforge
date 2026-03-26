@@ -232,7 +232,8 @@ def review_tailored():
             'generate/review_tailored.html',
             experiences=experiences_comparison,
             job_title=job_info_dict.get('title') or session.get('job_title'),
-            job_company=job_info_dict.get('company') or session.get('job_company')
+            job_company=job_info_dict.get('company') or session.get('job_company'),
+            job_info=job_info_dict
         )
     
     except Exception as e:
