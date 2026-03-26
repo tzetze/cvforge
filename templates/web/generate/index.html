@@ -9,8 +9,8 @@
     <div class="col-lg-8 mx-auto">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">CV Generation Workflow</h5>
-                <p class="card-text">Follow these steps to generate a targeted CV for a specific job:</p>
+                <h5 class="card-title">Tailor-First CV Generation Workflow</h5>
+                <p class="card-text">Our intelligent workflow tailors your CV before scoring for optimal results:</p>
 
                 <ol class="mt-4">
                     <li class="mb-3">
@@ -18,16 +18,21 @@
                         <p class="text-muted">Paste the job description or provide a LinkedIn job URL</p>
                     </li>
                     <li class="mb-3">
-                        <strong>Analyze Match</strong>
-                        <p class="text-muted">See how well your experience matches the job requirements</p>
+                        <strong>AI Tailoring (Automatic)</strong>
+                        <p class="text-muted">All achievements are automatically tailored to match the job requirements
+                        </p>
                     </li>
                     <li class="mb-3">
-                        <strong>Optional: AI Tailoring</strong>
-                        <p class="text-muted">Use LLM to rewrite content for better job fit</p>
+                        <strong>Review Changes</strong>
+                        <p class="text-muted">Compare original vs tailored content side-by-side</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Analyze Match</strong>
+                        <p class="text-muted">See how well your tailored content scores against job requirements</p>
                     </li>
                     <li class="mb-3">
                         <strong>Preview & Download</strong>
-                        <p class="text-muted">Review the generated CV and download as PDF</p>
+                        <p class="text-muted">Review the final CV and download as PDF</p>
                     </li>
                 </ol>
 
@@ -39,7 +44,13 @@
             </div>
         </div>
 
-        <div class="alert alert-info mt-4">
+        <div class="alert alert-success mt-4">
+            <i class="bi bi-magic"></i> <strong>New Tailor-First Approach:</strong>
+            Your achievements are automatically tailored to the job <em>before</em> scoring,
+            ensuring the best possible match. You'll review all changes before finalizing.
+        </div>
+
+        <div class="alert alert-info mt-3">
             <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Make sure your CV data is complete and up-to-date
             before generating a targeted CV.
             <a href="{{ url_for('cv_data.view') }}">View your CV data</a>
