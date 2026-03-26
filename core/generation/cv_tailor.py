@@ -331,10 +331,11 @@ CRITICAL INSTRUCTIONS:
 - Keep core accomplishments truthful and accurate
 - Use action verbs and quantifiable results
 - Incorporate relevant keywords naturally
-- VARY your word choice - each achievement must use DIFFERENT vocabulary
-- Do NOT repeat the same words across achievements (e.g., "independently", "proactively", "successfully")
-- If a word appears in the job description, use it ONLY ONCE across all achievements
-- Use diverse phrasing to keep each achievement distinct and professional
+- VARY your vocabulary across achievements to keep them distinct
+- Common words (independently, successfully, effectively) can be used but LIMIT to once or twice total
+- DISTINCTIVE words (spearheaded, orchestrated, pioneered) should be used ONLY ONCE across all achievements
+- Use diverse action verbs - don't repeat the same verb across achievements
+- Each achievement should sound unique while remaining professional
 - Maintain the same level of impact as the original
 
 Output format:
