@@ -7,6 +7,13 @@
 
 <div class="row">
     <div class="col-lg-10 mx-auto">
+        <!-- Tailored Content Notice -->
+        <div class="alert alert-success mb-3">
+            <i class="bi bi-check-circle"></i>
+            <strong>Tailored & Optimized:</strong>
+            This CV has been tailored for the job and the most relevant achievements have been selected.
+        </div>
+
         <!-- Match Score Banner -->
         <div class="alert alert-info mb-4">
             <div class="d-flex justify-content-between align-items-center">
@@ -202,14 +209,14 @@
 
         <!-- Action Buttons -->
         <div class="d-grid gap-2 d-md-flex justify-content-md-between mb-4">
-            <a href="{{ url_for('generate.tailor') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Tailoring
+            <a href="{{ url_for('generate.analyze') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Analysis
             </a>
             <div>
                 <a href="{{ url_for('generate.job_input') }}" class="btn btn-outline-secondary me-2">
                     <i class="bi bi-x-circle"></i> Start Over
                 </a>
-                <a href="{{ url_for('generate.download') }}" class="btn btn-success">
+                <a href="{{ url_for('generate.download') }}" class="btn btn-success btn-lg">
                     <i class="bi bi-download"></i> Download PDF
                 </a>
             </div>
