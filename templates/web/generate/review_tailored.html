@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Review Tailored Content - CVForge{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Review Tailored Achievements</h2>
+
+<div class="row">
+    <div class="col-lg-11 mx-auto">
+        <!-- Info Alert -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i>
+            <strong>All achievements have been tailored for:</strong> {{ job_title }}
+            {% if job_company %}at {{ job_company }}{% endif %}
+            <br>
+            <small>Review the changes below. The tailored versions emphasize relevant skills and keywords for this
+                position.</small>
+        </div>
+
+        <!-- Experiences with Side-by-Side Comparison -->
+        {% for exp in experiences %}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-briefcase"></i>
+                    {{ exp.position }} at {{ exp.company }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% for achievement in exp.achievements %}
+                <div class="achievement-comparison mb-4 {% if not loop.last %}border-bottom pb-4{% endif %}">
+                    <div class="row">
+                        <!-- Original Achievement -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-secondary me-2">Original</span>
+                                <small class="text-muted">Achievement {{ loop.index }}</small>
+                            </div>
+                            <div class="p-3 bg-light rounded">
+                                <p class="mb-2">{{ achievement.original }}</p>
+                                {% if achievement.skills %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Skills:</small>
+                                    {% for skill in achievement.skills %}
+                                    <span class="badge bg-secondary badge-sm me-1">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Tailored Achievement -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">Tailored</span>
+                                <small class="text-muted">
+                                    <i class="bi bi-arrow-right"></i> Optimized for job
+                                </small>
+                            </div>
+                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success">
+                                <p class="mb-2 text-success-emphasis">{{ achievement.tailored }}</p>
+                                {% if achievement.skills %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Skills:</small>
+                                    {% for skill in achievement.skills %}
+                                    <span class="badge bg-success badge-sm me-1">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Indicator -->
+                    {% if achievement.original != achievement.tailored %}
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Content tailored to emphasize job-relevant skills
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-dash-circle"></i>
+                            No changes needed
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Summary Statistics -->
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Tailoring Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3>{{ experiences|length }}</h3>
+                        <p class="text-muted">Experiences Tailored</p>
+                    </div>
+                    <div class="col-md-4">
+                        {% set total_achievements = experiences|sum(attribute='achievements')|length %}
+                        <h3>{{ total_achievements }}</h3>
+                        <p class="text-muted">Achievements Tailored</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3><i class="bi bi-check-circle text-success"></i></h3>
+                        <p class="text-muted">Ready for Analysis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+            <a href="{{ url_for('generate.job_input') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Job Input
+            </a>
+            <a href="{{ url_for('generate.analyze') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-arrow-right"></i> Continue to Analysis
+            </a>
+        </div>
+
+        <!-- Help Text -->
+        <div class="alert alert-light">
+            <h6><i class="bi bi-lightbulb"></i> What happens next?</h6>
+            <p class="mb-0">
+                The tailored achievements will be scored and the most relevant ones will be selected for your CV.
+                This ensures the final CV emphasizes the skills and experiences most relevant to the job.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .achievement-comparison {
+        transition: all 0.3s ease;
+    }
+
+    .achievement-comparison:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .badge-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+</style>
+{% endblock %}
