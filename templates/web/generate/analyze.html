@@ -102,6 +102,141 @@
             </div>
         </div>
 
+        <!-- Detailed Selection Analysis -->
+        {% if selected_content.selection_analysis %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Detailed Selection Analysis</h5>
+            </div>
+            <div class="card-body">
+                <!-- Configuration -->
+                <div class="alert alert-info">
+                    <strong>Selection Configuration:</strong>
+                    Max achievements per job: {{ selected_content.selection_analysis.configuration.max_achievements_per_job }} |
+                    Min score threshold: {{ "%.2f"|format(selected_content.selection_analysis.configuration.min_achievement_score) }}
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Experiences</h6>
+                        <ul class="list-unstyled">
+                            <li><span class="badge bg-success">{{ selected_content.selection_analysis.summary.included_experiences }}</span> Included</li>
+                            <li><span class="badge bg-danger">{{ selected_content.selection_analysis.summary.excluded_experiences }}</span> Excluded</li>
+                            <li><span class="badge bg-secondary">{{ selected_content.selection_analysis.summary.total_experiences }}</span> Total</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Achievements</h6>
+                        <ul class="list-unstyled">
+                            <li><span class="badge bg-success">{{ selected_content.selection_analysis.summary.selected_achievements }}</span> Selected</li>
+                            <li><span class="badge bg-danger">{{ selected_content.selection_analysis.summary.excluded_achievements }}</span> Excluded</li>
+                            <li><span class="badge bg-secondary">{{ selected_content.selection_analysis.summary.total_achievements }}</span> Total</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <strong>Avg Selected Score:</strong>
+                        <span class="badge bg-success">{{ "%.3f"|format(selected_content.selection_analysis.summary.average_selected_score) }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Avg Excluded Score:</strong>
+                        <span class="badge bg-danger">{{ "%.3f"|format(selected_content.selection_analysis.summary.average_excluded_score) }}</span>
+                    </div>
+                </div>
+
+                <!-- Experience-by-Experience Analysis -->
+                <h6 class="mt-4 mb-3">Experience Analysis</h6>
+                {% for exp_analysis in selected_content.selection_analysis.experiences %}
+                <div class="card mb-3 {% if exp_analysis.included %}border-success{% else %}border-danger{% endif %}">
+                    <div class="card-header {% if exp_analysis.included %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ exp_analysis.position }}</strong> at {{ exp_analysis.company }}
+                                {% if exp_analysis.included %}
+                                <span class="badge bg-success ms-2">INCLUDED</span>
+                                {% else %}
+                                <span class="badge bg-danger ms-2">EXCLUDED</span>
+                                {% endif %}
+                            </div>
+                            <small class="text-muted">{{ exp_analysis.start_date }} - {{ exp_analysis.end_date or 'Present' }}</small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3"><strong>Reason:</strong> {{ exp_analysis.reason }}</p>
+                        
+                        <p class="mb-2">
+                            <strong>Achievements:</strong>
+                            <span class="badge bg-success">{{ exp_analysis.selected_achievements }} selected</span>
+                            <span class="badge bg-danger">{{ exp_analysis.excluded_achievements }} excluded</span>
+                            <span class="badge bg-secondary">{{ exp_analysis.total_achievements }} total</span>
+                        </p>
+
+                        {% if exp_analysis.achievements %}
+                        <div class="accordion" id="accordion-{{ loop.index }}">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ loop.index }}">
+                                        View All Achievements with Scores
+                                    </button>
+                                </h2>
+                                <div id="collapse-{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordion-{{ loop.index }}">
+                                    <div class="accordion-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Status</th>
+                                                        <th>Achievement</th>
+                                                        <th>Total Score</th>
+                                                        <th>Score Breakdown</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for achievement in exp_analysis.achievements %}
+                                                    <tr class="{% if achievement.selected %}table-success{% else %}table-danger{% endif %}">
+                                                        <td>
+                                                            {% if achievement.selected %}
+                                                            <span class="badge bg-success">✓</span>
+                                                            {% else %}
+                                                            <span class="badge bg-danger">✗</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {{ achievement.text }}
+                                                            {% if achievement.skills %}
+                                                            <br><small class="text-muted">Skills: {{ achievement.skills|join(', ') }}</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <strong>{{ "%.3f"|format(achievement.total_score) }}</strong>
+                                                        </td>
+                                                        <td>
+                                                            <small>
+                                                                {% for key, value in achievement.score_breakdown.items() %}
+                                                                {{ key }}: {{ "%.3f"|format(value) }}<br>
+                                                                {% endfor %}
+                                                            </small>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Action Buttons -->
         <div class="d-grid gap-2 d-md-flex justify-content-md-center">
             <a href="{{ url_for('generate.job_input') }}" class="btn btn-secondary">

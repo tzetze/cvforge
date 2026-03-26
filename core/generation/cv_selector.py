@@ -39,6 +39,9 @@ class SelectedContent:
     total_achievements_selected: int
     average_relevance_score: float
     job_match_summary: Dict[str, Any]
+    
+    # Verbose analysis data
+    selection_analysis: Optional[Dict[str, Any]] = None
 
 
 class CVContentSelector:
@@ -76,7 +79,8 @@ class CVContentSelector:
     def select_content(
         self,
         cv_data: CVData,
-        job_requirements: JobRequirements
+        job_requirements: JobRequirements,
+        verbose: bool = False
     ) -> SelectedContent:
         """
         Select relevant CV content for a job.
@@ -84,6 +88,7 @@ class CVContentSelector:
         Args:
             cv_data: Complete CV data
             job_requirements: Parsed job requirements
+            verbose: If True, include detailed selection analysis
             
         Returns:
             SelectedContent with filtered and ranked content
@@ -103,6 +108,16 @@ class CVContentSelector:
         
         # Group achievements by experience
         achievements_by_exp = self._group_by_experience(top_achievements)
+        
+        # Build verbose analysis if requested
+        selection_analysis = None
+        if verbose:
+            selection_analysis = self._build_selection_analysis(
+                cv_data,
+                scored_achievements,
+                top_achievements,
+                achievements_by_exp
+            )
         
         # Build selected experiences
         selected_experiences = self._build_experiences(
@@ -138,7 +153,8 @@ class CVContentSelector:
             awards=self._export_awards(cv_data) if self.include_awards and cv_data.awards else None,
             total_achievements_selected=len(top_achievements),
             average_relevance_score=avg_score,
-            job_match_summary=job_match
+            job_match_summary=job_match,
+            selection_analysis=selection_analysis
         )
     
     def _group_by_experience(
@@ -153,6 +169,107 @@ class CVContentSelector:
                 grouped[key] = []
             grouped[key].append(sa)
         return grouped
+    
+    def _build_selection_analysis(
+        self,
+        cv_data: CVData,
+        all_scored_achievements: List[ScoredAchievement],
+        selected_achievements: List[ScoredAchievement],
+        achievements_by_exp: Dict[str, List[ScoredAchievement]]
+    ) -> Dict[str, Any]:
+        """
+        Build detailed analysis of experience and achievement selection.
+        
+        Returns verbose information about what was included/excluded and why.
+        """
+        selected_achievement_ids = {id(sa.achievement) for sa in selected_achievements}
+        
+        # Analyze each experience
+        experience_analysis = []
+        for exp in cv_data.experience:
+            key = f"{exp.company}_{exp.position}"
+            
+            # Get all achievements for this experience (scored)
+            exp_achievements = [
+                sa for sa in all_scored_achievements
+                if f"{sa.experience.company}_{sa.experience.position}" == key
+            ]
+            
+            # Separate selected and excluded
+            selected = [sa for sa in exp_achievements if id(sa.achievement) in selected_achievement_ids]
+            excluded = [sa for sa in exp_achievements if id(sa.achievement) not in selected_achievement_ids]
+            
+            # Determine inclusion status
+            is_included = key in achievements_by_exp
+            
+            # Build reasoning
+            if is_included:
+                reason = f"Included: {len(selected)} achievement(s) met relevance threshold"
+            elif not exp_achievements:
+                reason = "Excluded: No achievements defined for this experience"
+            elif not selected:
+                max_score = max((sa.total_score for sa in exp_achievements), default=0.0)
+                reason = f"Excluded: All achievements below threshold (highest: {max_score:.2f}, min: {self.min_achievement_score})"
+            else:
+                reason = "Excluded: No achievements selected (filtered out)"
+            
+            # Build achievement details
+            achievement_details = []
+            for sa in sorted(exp_achievements, key=lambda x: x.total_score, reverse=True):
+                achievement_details.append({
+                    "text": sa.achievement.text,
+                    "total_score": round(sa.total_score, 3),
+                    "score_breakdown": {k: round(v, 3) for k, v in sa.score_breakdown.items()},
+                    "selected": id(sa.achievement) in selected_achievement_ids,
+                    "skills": sa.achievement.skills,
+                    "impact": sa.achievement.impact.value if sa.achievement.impact else None,
+                    "metrics": sa.achievement.metrics
+                })
+            
+            experience_analysis.append({
+                "company": exp.company,
+                "position": exp.position,
+                "start_date": exp.start_date,
+                "end_date": exp.end_date,
+                "included": is_included,
+                "reason": reason,
+                "total_achievements": len(exp_achievements),
+                "selected_achievements": len(selected),
+                "excluded_achievements": len(excluded),
+                "achievements": achievement_details
+            })
+        
+        # Overall statistics
+        total_achievements = len(all_scored_achievements)
+        selected_count = len(selected_achievements)
+        excluded_count = total_achievements - selected_count
+        
+        return {
+            "configuration": {
+                "max_achievements_per_job": self.max_achievements_per_job,
+                "min_achievement_score": self.min_achievement_score,
+                "scoring_weights": self.scorer.weights
+            },
+            "summary": {
+                "total_experiences": len(cv_data.experience),
+                "included_experiences": len(achievements_by_exp),
+                "excluded_experiences": len(cv_data.experience) - len(achievements_by_exp),
+                "total_achievements": total_achievements,
+                "selected_achievements": selected_count,
+                "excluded_achievements": excluded_count,
+                "average_selected_score": round(
+                    sum(sa.total_score for sa in selected_achievements) / selected_count
+                    if selected_count > 0 else 0.0,
+                    3
+                ),
+                "average_excluded_score": round(
+                    sum(sa.total_score for sa in all_scored_achievements if id(sa.achievement) not in selected_achievement_ids) / excluded_count
+                    if excluded_count > 0 else 0.0,
+                    3
+                )
+            },
+            "experiences": experience_analysis
+        }
     
     def _build_experiences(
         self,

@@ -133,9 +133,11 @@ def analyze():
         scorer = AchievementScorer()
         selector = CVContentSelector(scorer)
         
+        # Enable verbose analysis
         selected_content = selector.select_content(
             cv_data=cv_data,
-            job_requirements=job_info
+            job_requirements=job_info,
+            verbose=True
         )
         
         # Store in session for later use
