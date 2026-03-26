@@ -337,139 +337,40 @@ def analyze():
         return redirect(url_for('generate.job_input'))
 
 
+# OLD TAILOR ROUTE - DEPRECATED IN TAILOR-FIRST WORKFLOW
+# Tailoring now happens upfront in /generate/tailor-all
+# This route is kept for backward compatibility but redirects to preview
 @generate_bp.route('/tailor', methods=['GET', 'POST'])
 def tailor():
-    """Tailor CV content with LLM (optional step)."""
-    try:
-        if request.method == 'POST':
-            use_tailoring = request.form.get('use_tailoring') == 'yes'
-            session['use_tailoring'] = use_tailoring
-            
-            if use_tailoring:
-                flash('CV will be tailored with LLM', 'info')
-            else:
-                flash('CV will use selected content without LLM tailoring', 'info')
-            
-            return redirect(url_for('generate.preview'))
-        
-        # Check if LLM is configured
-        try:
-            from core.data_manager import DataManager
-            data_manager = DataManager()
-            settings = data_manager.load_settings()
-            settings_dict = settings.model_dump()
-            # Check if llm.providers exists and has at least one provider configured
-            llm_config = settings_dict.get('llm', {})
-            providers = llm_config.get('providers', {})
-            llm_configured = bool(providers)
-            logger.info(f"LLM configuration check: {len(providers)} providers found")
-        except Exception as e:
-            logger.error(f"Error checking LLM configuration: {e}")
-            llm_configured = False
-        
-        return render_template(
-            'generate/tailor.html',
-            llm_configured=llm_configured
-        )
-    
-    except Exception as e:
-        logger.error(f"Error in tailor step: {e}")
-        flash(f'Error: {str(e)}', 'danger')
-        return redirect(url_for('generate.analyze'))
+    """Tailor CV content with LLM (optional step) - DEPRECATED in tailor-first workflow."""
+    flash('Tailoring now happens automatically. Proceeding to preview.', 'info')
+    return redirect(url_for('generate.preview'))
 
 
 @generate_bp.route('/preview')
 def preview():
-    """Preview generated CV before downloading."""
+    """Preview generated CV before downloading (content already tailored)."""
     try:
-        # Load CV data
+        # Load CV data for personal info
         cv_data_path = current_app.config['CV_DATA_PATH']
         cv_data = load_cv_data(str(cv_data_path))
         
-        # Get job info and selected content from session
-        job_description = session.get('job_description')
-        job_info_dict = session.get('job_info', {})
+        # Get selected content from session (already tailored and scored)
         selected_experiences_data = session.get('selected_experiences', [])
-        use_tailoring = session.get('use_tailoring', False)
+        selected_summary = session.get('selected_summary')
         
-        if not job_description or not selected_experiences_data:
-            flash('Session expired. Please start over from job analysis.', 'warning')
+        if not selected_experiences_data:
+            flash('Session expired. Please start over from job input.', 'warning')
             return redirect(url_for('generate.job_input'))
         
-        # Reconstruct job_info from session
-        job_info = JobRequirements(
-            required_skills=job_info_dict.get('required_skills', []),
-            preferred_skills=job_info_dict.get('preferred_skills', []),
-            keywords=set(job_info_dict.get('keywords', []))
-        )
+        # Content is already tailored from tailor-all step
+        # Just display what was selected in analyze step
+        summary = selected_summary or cv_data.summary
+        experiences = selected_experiences_data
         
-        # Reconstruct selected_content from session (already in correct dict format)
-        selected_content = SelectedContent(
-            personal_info=cv_data.personal.model_dump() if cv_data.personal else {},
-            summary=session.get('selected_summary'),
-            experiences=selected_experiences_data,  # Already in dict format
-            skills=session.get('selected_skills', {}),
-            education=session.get('selected_education'),
-            certifications=session.get('selected_certifications'),
-            volunteer=None,  # Not stored in session for now
-            projects=session.get('selected_projects'),
-            publications=None,  # Not stored in session for now
-            awards=None,  # Not stored in session for now
-            total_achievements_selected=sum(len(exp.get('achievements', [])) for exp in selected_experiences_data),
-            average_relevance_score=session.get('match_score', 0) / 100.0,  # Convert back from percentage
-            job_match_summary=session.get('job_match_summary', {})
-        )
-        
-        # Tailor if requested
-        if use_tailoring:
-            try:
-                from core.data_manager import DataManager
-                data_manager = DataManager()
-                settings = data_manager.load_settings()
-                
-                llm_manager = LLMManager(settings.model_dump())
-                llm = llm_manager.get_provider()  # Uses default provider from settings
-                
-                # Pass cv_generation config to tailoring engine
-                cv_gen = settings.cv_generation
-                tailor_config = {
-                    'max_achievement_words': cv_gen.get('max_achievement_words', 25),
-                    'rewrite_achievements': cv_gen.get('rewrite_achievements', True),
-                    'rewrite_summary': cv_gen.get('rewrite_summary', True),
-                    'max_summary_length': cv_gen.get('max_summary_length', 150)
-                }
-                tailor = CVTailoringEngine(llm, config=tailor_config)
-                tailored_cv = tailor.tailor_cv(
-                    selected_content=selected_content,
-                    job_requirements=job_info,
-                    job_description=job_description
-                )
-                
-                summary = tailored_cv.summary
-                experiences = tailored_cv.experiences
-                
-                # Store tailored content in session for PDF download
-                session['tailored_summary'] = summary
-                session['tailored_experiences'] = experiences
-                
-                flash('CV content tailored with LLM', 'success')
-            
-            except Exception as e:
-                logger.error(f"Error tailoring CV: {e}")
-                flash(f'LLM tailoring failed, using selected content: {str(e)}', 'warning')
-                summary = cv_data.summary
-                experiences = selected_content.experiences
-                
-                # Store non-tailored content in session
-                session['tailored_summary'] = summary
-                session['tailored_experiences'] = experiences
-        else:
-            summary = cv_data.summary
-            experiences = selected_content.experiences
-            
-            # Store non-tailored content in session
-            session['tailored_summary'] = summary
-            session['tailored_experiences'] = experiences
+        # Store for PDF download
+        session['tailored_summary'] = summary
+        session['tailored_experiences'] = experiences
         
         return render_template(
             'generate/preview.html',
