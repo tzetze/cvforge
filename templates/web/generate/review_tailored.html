@@ -10,8 +10,13 @@
         <!-- Info Alert -->
         <div class="alert alert-info mb-4">
             <i class="bi bi-info-circle"></i>
-            <strong>All achievements have been tailored for:</strong> {{ job_title }}
-            {% if job_company %}at {{ job_company }}{% endif %}
+            <strong>All achievements have been tailored for:</strong>
+            {% if job_title and job_title != 'None' %}
+            {{ job_title }}
+            {% if job_company and job_company != 'None' %} at {{ job_company }}{% endif %}
+            {% else %}
+            the target position
+            {% endif %}
             <br>
             <small>Review the changes below. The tailored versions emphasize relevant skills and keywords for this
                 position.</small>

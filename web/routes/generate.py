@@ -231,8 +231,8 @@ def review_tailored():
         return render_template(
             'generate/review_tailored.html',
             experiences=experiences_comparison,
-            job_title=job_info_dict.get('title', 'the position'),
-            job_company=job_info_dict.get('company', 'the company')
+            job_title=job_info_dict.get('title') or session.get('job_title'),
+            job_company=job_info_dict.get('company') or session.get('job_company')
         )
     
     except Exception as e:
