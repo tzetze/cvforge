@@ -9,8 +9,10 @@ An AI-powered CV generation system that creates targeted, ATS-compliant CVs tail
 - Automatically selects most relevant achievements for each job
 - Calculates job match scores
 
-**LLM-Powered Tailoring**
-- Rewrites CV content to emphasize job-relevant skills
+**LLM-Powered Tailoring (Tailor-First Workflow)**
+- **NEW:** Tailors ALL achievements upfront before scoring
+- Shows side-by-side comparison of original vs tailored content
+- Scores and selects based on tailored (more relevant) achievements
 - Supports multiple LLM providers (Claude API, Ollama)
 - Maintains authenticity while optimizing for relevance
 
@@ -132,6 +134,58 @@ python3 -m flask --app web.app run
 
 # Or run specific tests
 pytest tests/test_data_manager.py -v
+
+## How It Works: Tailor-First Workflow
+
+CVForge uses an innovative **Tailor-First** approach that ensures the most relevant content is selected:
+
+### Workflow Steps
+
+```
+1. Job Input → 2. Tailor All → 3. Review → 4. Analyze & Score → 5. Preview → 6. Download
+```
+
+#### 1. **Job Input**
+- Enter job description manually or paste LinkedIn URL
+- System extracts requirements, skills, and keywords
+
+#### 2. **Tailor All Achievements** (NEW!)
+- **All** achievements are tailored upfront using LLM
+- Content is rewritten to emphasize job-relevant skills
+- Original text is preserved for comparison
+
+#### 3. **Review Tailored Content**
+- Side-by-side comparison of original vs tailored achievements
+- Visual indicators show what changed
+- Transparency before scoring happens
+
+#### 4. **Analyze & Score**
+- Scoring happens on **tailored** achievements (not original)
+- Multi-factor scoring: keywords, skills, impact, recency, semantic similarity
+- Best achievements selected based on actual tailored relevance
+
+#### 5. **Preview**
+- See your final CV before downloading
+- All content is already optimized
+
+#### 6. **Download PDF**
+- ATS-compliant PDF generation
+- Professional formatting
+
+### Why Tailor-First?
+
+**Traditional Approach Problems:**
+- Scoring happens on original achievements
+- Tailoring happens after selection
+- Selected achievements might not be best after tailoring
+
+**Tailor-First Benefits:**
+- ✅ Scoring based on actual tailored content
+- ✅ Better selection of most relevant achievements
+- ✅ User sees tailored content early for review
+- ✅ More transparent process
+- ✅ Higher quality final CV
+
 ```
 
 ## Project Structure
