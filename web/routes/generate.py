@@ -5,7 +5,7 @@ Handles job input, CV generation workflow, and PDF download.
 """
 
 import logging
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, send_file, session, jsonify
 from pathlib import Path
 from datetime import datetime
 import yaml
@@ -238,6 +238,96 @@ def review_tailored():
     
     except Exception as e:
         logger.error(f"Error reviewing tailored content: {e}", exc_info=True)
+
+@generate_bp.route('/reroll-achievement', methods=['POST'])
+def reroll_achievement():
+    """Re-tailor a single achievement via AJAX."""
+    try:
+        data = request.get_json()
+        exp_index = data.get('exp_index')
+        ach_index = data.get('ach_index')
+        
+        if exp_index is None or ach_index is None:
+            return jsonify({'success': False, 'error': 'Missing indices'}), 400
+        
+        # Get tailored CV data and job info from session
+        tailored_cv_dict = session.get('tailored_cv_data')
+        job_info_dict = session.get('job_info', {})
+        job_description = session.get('job_description')
+        
+        if not tailored_cv_dict or not job_description:
+            return jsonify({'success': False, 'error': 'Session data missing'}), 400
+        
+        # Reconstruct CVData and JobRequirements
+        from core.models import CVData
+        tailored_cv_data = CVData(**tailored_cv_dict)
+        
+        from core.job.parser import JobRequirements
+        job_requirements = JobRequirements(
+            title=job_info_dict.get('title', 'Position'),
+            company=job_info_dict.get('company'),
+            required_skills=job_info_dict.get('required_skills', []),
+            preferred_skills=job_info_dict.get('preferred_skills', []),
+            keywords=set(job_info_dict.get('keywords', []))
+        )
+        
+        # Get the experience
+        if exp_index >= len(tailored_cv_data.experience):
+            return jsonify({'success': False, 'error': 'Experience index out of range'}), 400
+        
+        experience = tailored_cv_data.experience[exp_index]
+        
+        if ach_index >= len(experience.achievements):
+            return jsonify({'success': False, 'error': 'Achievement index out of range'}), 400
+        
+        # Load settings and initialize LLM
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Initialize tailoring engine
+        cv_gen = settings.cv_generation
+        tailor_config = {
+            'max_achievement_words': cv_gen.get('max_achievement_words', 25),
+            'rewrite_achievements': cv_gen.get('rewrite_achievements', True),
+        }
+        
+        from core.generation.cv_tailor import CVTailoringEngine
+        tailor = CVTailoringEngine(llm, config=tailor_config)
+        
+        # Convert achievements to dicts for the method
+        achievements_dicts = [ach.model_dump() for ach in experience.achievements]
+        
+        # Re-tailor the single achievement
+        new_text = tailor.retailor_single_achievement(
+            experience_achievements=achievements_dicts,
+            achievement_index=ach_index,
+            job_requirements=job_requirements,
+            job_description=job_description
+        )
+        
+        # Update the achievement in the CV data
+        experience.achievements[ach_index].text = new_text
+        
+        # Update session with modified CV data
+        tailored_cv_dict = tailored_cv_data.model_dump(mode='json')
+        session['tailored_cv_data'] = tailored_cv_dict
+        session.modified = True
+        
+        logger.info(f"Re-rolled achievement {ach_index} in experience {exp_index}")
+        
+        return jsonify({
+            'success': True,
+            'new_text': new_text
+        })
+        
+    except Exception as e:
+        logger.error(f"Error re-rolling achievement: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
         flash(f'Error: {str(e)}', 'danger')
         return redirect(url_for('generate.job_input'))
 

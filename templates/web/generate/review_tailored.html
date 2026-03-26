@@ -115,14 +115,22 @@
 
                         <!-- Tailored Achievement -->
                         <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="badge bg-success me-2">Tailored</span>
-                                <small class="text-muted">
-                                    <i class="bi bi-arrow-right"></i> Optimized for job
-                                </small>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div>
+                                    <span class="badge bg-success me-2">Tailored</span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-arrow-right"></i> Optimized for job
+                                    </small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary reroll-btn"
+                                    data-exp-index="{{ loop.parent.loop.index0 }}" data-ach-index="{{ loop.index0 }}"
+                                    title="Re-generate this achievement">
+                                    <i class="bi bi-arrow-clockwise"></i> Re-roll
+                                </button>
                             </div>
-                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success">
-                                <p class="mb-2 text-success-emphasis">{{ achievement.tailored }}</p>
+                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success"
+                                id="achievement-{{ loop.parent.loop.index0 }}-{{ loop.index0 }}">
+                                <p class="mb-2 text-success-emphasis achievement-text">{{ achievement.tailored }}</p>
                                 {% if achievement.skills %}
                                 <div class="mt-2">
                                     <small class="text-muted">Skills:</small>
@@ -200,6 +208,78 @@
             </p>
         </div>
     </div>
+</div>
+
+<script>
+    // Re-roll achievement functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const rerollButtons = document.querySelectorAll('.reroll-btn');
+
+        rerollButtons.forEach(button => {
+            button.addEventListener('click', async function () {
+                const expIndex = parseInt(this.dataset.expIndex);
+                const achIndex = parseInt(this.dataset.achIndex);
+                const achievementDiv = document.getElementById(`achievement-${expIndex}-${achIndex}`);
+                const achievementText = achievementDiv.querySelector('.achievement-text');
+
+                // Disable button and show loading state
+                this.disabled = true;
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Re-rolling...';
+
+                try {
+                    const response = await fetch('{{ url_for("generate.reroll_achievement") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            exp_index: expIndex,
+                            ach_index: achIndex
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Animate the change
+                        achievementDiv.style.transition = 'opacity 0.3s';
+                        achievementDiv.style.opacity = '0.3';
+
+                        setTimeout(() => {
+                            achievementText.textContent = data.new_text;
+                            achievementDiv.style.opacity = '1';
+
+                            // Show success feedback
+                            const feedback = document.createElement('div');
+                            feedback.className = 'alert alert-success alert-dismissible fade show mt-2';
+                            feedback.innerHTML = `
+                            <i class="bi bi-check-circle"></i> Achievement re-generated successfully!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                            achievementDiv.appendChild(feedback);
+
+                            // Auto-dismiss after 3 seconds
+                            setTimeout(() => {
+                                feedback.remove();
+                            }, 3000);
+                        }, 300);
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to re-roll achievement'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to re-roll achievement. Please try again.');
+                } finally {
+                    // Re-enable button
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
 </div>
 
 <style>

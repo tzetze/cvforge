@@ -486,6 +486,111 @@ etc."""
             # Fallback to original on error
             print(f"Warning: Failed to tailor achievements batch: {e}")
             return achievements
+    def retailor_single_achievement(
+        self,
+        experience_achievements: List[Dict[str, Any]],
+        achievement_index: int,
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> str:
+        """
+        Re-tailor a single achievement with context of other achievements.
+        
+        This ensures the re-rolled achievement maintains consistency with
+        other achievements in the same experience (vocabulary diversity, etc.).
+        
+        Args:
+            experience_achievements: All achievements for this experience
+            achievement_index: Index of achievement to re-tailor (0-based)
+            job_requirements: Job requirements
+            job_description: Optional job description text
+            
+        Returns:
+            New tailored text for the achievement
+        """
+        if achievement_index >= len(experience_achievements):
+            raise ValueError(f"Achievement index {achievement_index} out of range")
+        
+        target_ach = experience_achievements[achievement_index]
+        
+        # Get original text from keywords metadata
+        original_text = target_ach.get("text")
+        for keyword in target_ach.get("keywords", []):
+            if isinstance(keyword, str) and keyword.startswith("__original__:"):
+                original_text = keyword[len("__original__:"):]
+                break
+        
+        # Build context from other achievements
+        other_achievements_text = ""
+        for i, ach in enumerate(experience_achievements):
+            if i != achievement_index:
+                other_achievements_text += f"- {ach['text']}\n"
+        
+        # Get relevant job skills
+        job_skills = []
+        if job_requirements.required_skills:
+            job_skills.extend(job_requirements.required_skills[:5])
+        if job_requirements.technologies:
+            job_skills.extend(list(job_requirements.technologies)[:5])
+        
+        # Include job context
+        job_context = ""
+        if job_description:
+            job_desc_preview = job_description[:300] + "..." if len(job_description) > 300 else job_description
+            job_context = f"""
+Job Posting Context:
+{job_desc_preview}
+"""
+        
+        max_words = self.config.get("max_achievement_words", 25)
+        
+        prompt = f"""Rewrite this achievement to emphasize relevance for a {job_requirements.title} position.
+
+Original Achievement:
+{original_text}
+
+Skills in this achievement: {", ".join(target_ach.get("skills", []))}
+
+Other achievements in this experience (for context - use DIFFERENT vocabulary):
+{other_achievements_text}
+
+Job Requirements: {", ".join(job_skills[:5])}
+{job_context}
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the rewritten achievement text
+- Do NOT include explanations, notes, or commentary
+- Keep under {max_words} words
+- Keep core accomplishment truthful and accurate
+- Use action verbs and quantifiable results
+- Incorporate relevant keywords naturally
+- IMPORTANT: Use DIFFERENT vocabulary than the other achievements shown above
+- Avoid repeating distinctive words (spearheaded, orchestrated, pioneered, etc.) already used
+- Choose a unique action verb not used in other achievements
+- Maintain professional tone while being distinctive
+
+Output only the rewritten achievement:"""
+        
+        try:
+            response = self.llm.generate(
+                prompt=prompt,
+                temperature=0.8,  # Higher temperature for more variety
+                max_tokens=150
+            )
+            
+            tailored_text = response.content.strip()
+            tailored_text = self._clean_llm_response(tailored_text)
+            
+            # Fallback to original if response is too short or invalid
+            if len(tailored_text) < 20:
+                return target_ach["text"]
+            
+            return tailored_text
+            
+        except Exception as e:
+            print(f"Warning: Failed to re-tailor achievement: {e}")
+            return target_ach["text"]
+
     
     def _tailor_achievement(
         self,
