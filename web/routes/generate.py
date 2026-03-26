@@ -1,4 +1,4 @@
-    """
+"""
 CV Generation routes.
 
 Handles job input, CV generation workflow, and PDF download.
