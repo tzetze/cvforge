@@ -7,10 +7,12 @@ specific job requirements while maintaining authenticity.
 
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
+from copy import deepcopy
 
 from core.llm.base import LLMProvider
 from core.generation.cv_selector import SelectedContent
 from core.job.parser import JobRequirements
+from core.models import CVData
 
 
 @dataclass
@@ -128,6 +130,113 @@ class CVTailoringEngine:
             company=job_requirements.company,
             tailoring_notes=tailoring_notes
         )
+    
+    def tailor_all_achievements(
+        self,
+        cv_data: CVData,
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> CVData:
+        """
+        Tailor all achievements in the CV for a job.
+        
+        This method tailors ALL achievements upfront before scoring/selection,
+        preserving original text for comparison. Returns a new CVData object
+        with tailored achievements.
+        
+        Args:
+            cv_data: Complete CV data
+            job_requirements: Job requirements
+            job_description: Original job description text (optional, for better context)
+            
+        Returns:
+            New CVData with tailored achievements (original text preserved in metadata)
+        """
+        # Create a deep copy to avoid modifying original
+        tailored_cv = deepcopy(cv_data)
+        
+        # Tailor summary if it exists
+        if tailored_cv.summary and self.rewrite_summary:
+            # Create a minimal job match summary for context
+            job_match_summary = {
+                "matched_skills": list(job_requirements.required_skills or [])[:5],
+                "match_score": 0.0  # Not calculated yet
+            }
+            
+            tailored_cv.summary = self._tailor_summary(
+                tailored_cv.summary,
+                job_requirements,
+                job_match_summary,
+                job_description
+            )
+        
+        # Tailor all experiences and achievements
+        if self.rewrite_achievements:
+            tailored_experiences = []
+            
+            for exp in tailored_cv.experience:
+                tailored_exp = exp.model_copy(deep=True)
+                
+                if exp.achievements:
+                    # Convert achievements to dict format for tailoring
+                    achievements_dicts = [
+                        {
+                            "text": ach.text,
+                            "skills": ach.skills,
+                            "impact": ach.impact,
+                            "metrics": ach.metrics,
+                            "keywords": ach.keywords
+                        }
+                        for ach in exp.achievements
+                    ]
+                    
+                    # Tailor achievements for this experience as a batch
+                    tailored_achievements_dicts = self._tailor_achievements_batch(
+                        achievements_dicts,
+                        job_requirements,
+                        job_description
+                    )
+                    
+                    # Update achievements with tailored text, preserving original
+                    tailored_achievements = []
+                    for i, ach in enumerate(exp.achievements):
+                        tailored_ach = ach.model_copy(deep=True)
+                        
+                        # Store original text in keywords for comparison
+                        # (we'll use a special format to identify it)
+                        original_keywords = list(tailored_ach.keywords or [])
+                        if not any(k.startswith("__original__:") for k in original_keywords):
+                            original_keywords.append(f"__original__:{ach.text}")
+                        
+                        # Update with tailored text
+                        tailored_ach.text = tailored_achievements_dicts[i]["text"]
+                        tailored_ach.keywords = original_keywords
+                        
+                        tailored_achievements.append(tailored_ach)
+                    
+                    tailored_exp.achievements = tailored_achievements
+                
+                tailored_experiences.append(tailored_exp)
+            
+            tailored_cv.experience = tailored_experiences
+        
+        return tailored_cv
+    
+    def get_original_achievement_text(self, achievement: Dict[str, Any]) -> Optional[str]:
+        """
+        Extract original achievement text from keywords metadata.
+        
+        Args:
+            achievement: Achievement dict with keywords
+            
+        Returns:
+            Original text if found, None otherwise
+        """
+        keywords = achievement.get("keywords", [])
+        for keyword in keywords:
+            if isinstance(keyword, str) and keyword.startswith("__original__:"):
+                return keyword[len("__original__:"):]
+        return None
     
     def _tailor_summary(
         self,
@@ -554,10 +663,7 @@ Output the rewritten achievement text only:"""
             for achievement in exp.get("achievements", []):
                 if achievement_index < len(tailored_achievements_map):
                     tailored_achievement = achievement.copy()
-                    tailored_achievement["text"] = tailored_achievements_map.get(
-                        achievement_index,
-                        achievement["text"]
-                    )
+                    tailored_achievement["text"] = tailored_achievements_map[achievement_index]["text"]
                     tailored_exp_achievements.append(tailored_achievement)
                     achievement_index += 1
             
