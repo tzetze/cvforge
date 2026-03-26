@@ -269,27 +269,113 @@ Professional Summary:"""
         for exp in experiences:
             tailored_exp = exp.copy()
             
-            # Tailor achievements
+            # Tailor achievements for this experience as a batch
             if exp.get("achievements"):
-                tailored_achievements = []
-                
-                for achievement in exp["achievements"]:
-                    tailored_text = self._tailor_achievement(
-                        achievement["text"],
-                        achievement.get("skills", []),
-                        job_requirements,
-                        job_description
-                    )
-                    
-                    tailored_achievement = achievement.copy()
-                    tailored_achievement["text"] = tailored_text
-                    tailored_achievements.append(tailored_achievement)
-                
+                tailored_achievements = self._tailor_achievements_batch(
+                    exp["achievements"],
+                    job_requirements,
+                    job_description
+                )
                 tailored_exp["achievements"] = tailored_achievements
             
             tailored.append(tailored_exp)
         
         return tailored
+    
+    def _tailor_achievements_batch(
+        self,
+        achievements: List[Dict[str, Any]],
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Tailor all achievements for an experience in a single LLM call to maintain consistency."""
+        
+        # Get relevant job skills
+        job_skills = []
+        if job_requirements.required_skills:
+            job_skills.extend(job_requirements.required_skills[:5])
+        if job_requirements.technologies:
+            job_skills.extend(list(job_requirements.technologies)[:5])
+        
+        # Build achievements list for prompt
+        achievements_text = ""
+        for i, ach in enumerate(achievements, 1):
+            skills_str = ", ".join(ach.get("skills", []))
+            achievements_text += f"{i}. {ach['text']}\n   Skills: {skills_str}\n\n"
+        
+        # Include job context
+        job_context = ""
+        if job_description:
+            job_desc_preview = job_description[:300] + "..." if len(job_description) > 300 else job_description
+            job_context = f"""
+Job Posting Context:
+{job_desc_preview}
+"""
+        
+        # Get max length from config
+        max_words = self.config.get("max_achievement_words", 25)
+        
+        prompt = f"""Rewrite these {len(achievements)} achievements to emphasize relevance for a {job_requirements.title} position.
+
+Original Achievements:
+{achievements_text}
+
+Job Requirements: {", ".join(job_skills[:5])}
+{job_context}
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the rewritten achievements, numbered 1-{len(achievements)}
+- Each achievement on its own line, starting with the number
+- Do NOT include explanations, notes, or commentary
+- Keep each achievement under {max_words} words
+- Keep core accomplishments truthful and accurate
+- Use action verbs and quantifiable results
+- Incorporate relevant keywords naturally
+- VARY your word choice - each achievement must use DIFFERENT vocabulary
+- Do NOT repeat the same words across achievements (e.g., "independently", "proactively", "successfully")
+- If a word appears in the job description, use it ONLY ONCE across all achievements
+- Use diverse phrasing to keep each achievement distinct and professional
+- Maintain the same level of impact as the original
+
+Output format:
+1. [First rewritten achievement]
+2. [Second rewritten achievement]
+etc."""
+        
+        try:
+            response = self.llm.generate(
+                prompt=prompt,
+                temperature=0.7,  # Slightly higher for more variety
+                max_tokens=len(achievements) * 100
+            )
+            
+            # Parse the response
+            lines = response.content.strip().split('\n')
+            tailored_achievements = []
+            
+            for i, ach in enumerate(achievements, 1):
+                # Find the line starting with this number
+                tailored_text = None
+                for line in lines:
+                    line = line.strip()
+                    if line.startswith(f"{i}."):
+                        tailored_text = line[len(f"{i}."):].strip()
+                        break
+                
+                # Fallback to original if parsing fails
+                if not tailored_text or len(tailored_text) < 20:
+                    tailored_text = ach["text"]
+                
+                tailored_ach = ach.copy()
+                tailored_ach["text"] = tailored_text
+                tailored_achievements.append(tailored_ach)
+            
+            return tailored_achievements
+            
+        except Exception as e:
+            # Fallback to original on error
+            print(f"Warning: Failed to tailor achievements batch: {e}")
+            return achievements
     
     def _tailor_achievement(
         self,
@@ -493,78 +579,3 @@ Output the rewritten achievement text only:"""
             tailoring_notes=tailoring_notes
         )
     
-    def _tailor_achievements_batch(
-        self,
-        achievements: List[Dict[str, Any]],
-        job_requirements: JobRequirements
-    ) -> Dict[int, str]:
-        """Tailor multiple achievements in a single LLM call."""
-        
-        # Build achievements list
-        achievements_text = "\n\n".join([
-            f"{i+1}. [{a['company']} - {a['position']}]\n   {a['text']}\n   Skills: {', '.join(a['skills'])}"
-            for i, a in enumerate(achievements)
-        ])
-        
-        prompt = f"""Rewrite these achievements to emphasize relevance for a {job_requirements.title} position.
-
-Target Role: {job_requirements.title}
-Company: {job_requirements.company or 'Not specified'}
-
-Achievements to Rewrite:
-{achievements_text}
-
-Instructions:
-1. Rewrite each achievement to emphasize relevant skills
-2. Keep accomplishments truthful and accurate
-3. Use action verbs and quantifiable results
-4. Incorporate job-relevant keywords naturally
-5. Maintain the same level of impact
-6. Keep each achievement concise (1-2 sentences)
-7. Number each rewritten achievement (1., 2., etc.)
-
-Rewritten Achievements:"""
-        
-        try:
-            response = self.llm.generate(
-                prompt=prompt,
-                temperature=0.6,
-                max_tokens=2000
-            )
-            
-            # Parse response
-            tailored_map = {}
-            lines = response.content.strip().split('\n')
-            current_index = None
-            current_text = []
-            
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
-                
-                # Check if line starts with a number
-                if line[0].isdigit() and '. ' in line[:5]:
-                    # Save previous achievement
-                    if current_index is not None and current_text:
-                        tailored_map[current_index] = ' '.join(current_text).strip()
-                    
-                    # Start new achievement
-                    try:
-                        current_index = int(line.split('.')[0]) - 1
-                        current_text = [line.split('. ', 1)[1] if '. ' in line else line]
-                    except (ValueError, IndexError):
-                        current_text.append(line)
-                else:
-                    current_text.append(line)
-            
-            # Save last achievement
-            if current_index is not None and current_text:
-                tailored_map[current_index] = ' '.join(current_text).strip()
-            
-            return tailored_map
-            
-        except Exception as e:
-            print(f"Warning: Failed to batch tailor achievements: {e}")
-            # Return original texts
-            return {i: a["text"] for i, a in enumerate(achievements)}

@@ -296,7 +296,15 @@ def preview():
                 llm_manager = LLMManager(settings.model_dump())
                 llm = llm_manager.get_provider()  # Uses default provider from settings
                 
-                tailor = CVTailoringEngine(llm)
+                # Pass cv_generation config to tailoring engine
+                cv_gen = settings.cv_generation
+                tailor_config = {
+                    'max_achievement_words': cv_gen.get('max_achievement_words', 25),
+                    'rewrite_achievements': cv_gen.get('rewrite_achievements', True),
+                    'rewrite_summary': cv_gen.get('rewrite_summary', True),
+                    'max_summary_length': cv_gen.get('max_summary_length', 150)
+                }
+                tailor = CVTailoringEngine(llm, config=tailor_config)
                 tailored_cv = tailor.tailor_cv(
                     selected_content=selected_content,
                     job_requirements=job_info,
