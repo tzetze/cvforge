@@ -549,3 +549,108 @@ class CVContentSelector:
             "years_experience_required": job_requirements.years_experience,
             "seniority_level": job_requirements.seniority_level
         }
+    
+    def calculate_overall_cv_match(
+        self,
+        cv_data: CVData,
+        job_requirements: JobRequirements,
+        job_description: str,
+        llm
+    ) -> float:
+        """
+        Calculate overall CV match using LLM semantic analysis.
+        Includes professional summary, experience descriptions, and achievements.
+        
+        Args:
+            cv_data: Complete CV data
+            job_requirements: Job requirements
+            job_description: Full job description
+            llm: LLM provider
+            
+        Returns:
+            Match score between 0.0 and 1.0
+        """
+        try:
+            # Build CV content summary
+            cv_content = []
+            
+            # Add professional summary
+            if cv_data.summary:
+                cv_content.append(f"Professional Summary:\n{cv_data.summary}\n")
+            
+            # Add experience descriptions and achievements
+            cv_content.append("Work Experience:")
+            for exp in cv_data.experience[:5]:  # Limit to recent 5 experiences
+                cv_content.append(f"\n{exp.position} at {exp.company} ({exp.start_date} - {exp.end_date or 'Present'})")
+                if exp.description:
+                    cv_content.append(f"Description: {exp.description}")
+                if exp.achievements:
+                    cv_content.append("Key Achievements:")
+                    for ach in exp.achievements[:3]:  # Top 3 achievements per job
+                        cv_content.append(f"  • {ach.text}")
+            
+            # Add skills
+            all_skills = cv_data.get_all_skills()
+            if all_skills:
+                cv_content.append(f"\nSkills: {', '.join(list(all_skills)[:20])}")  # Top 20 skills
+            
+            cv_text = "\n".join(cv_content)
+            
+            # Truncate if too long
+            if len(cv_text) > 3000:
+                cv_text = cv_text[:3000] + "..."
+            
+            if len(job_description) > 1500:
+                job_desc = job_description[:1500] + "..."
+            else:
+                job_desc = job_description
+            
+            prompt = f"""Analyze how well this CV matches the job requirements. Consider:
+1. Relevant experience and skills
+2. Professional summary alignment
+3. Achievement relevance
+4. Technical skills match
+5. Seniority level fit
+
+Job Position: {job_requirements.title}
+Company: {job_requirements.company or "Not specified"}
+
+Job Description:
+{job_desc}
+
+Candidate CV:
+{cv_text}
+
+Provide a single match score between 0.0 (no match) and 1.0 (perfect match).
+Consider semantic similarity, not just exact keyword matching.
+
+Output ONLY the numeric score (e.g., 0.75):"""
+
+            response = llm.generate(
+                prompt=prompt,
+                temperature=0.0,
+                max_tokens=10
+            )
+            
+            # Parse score
+            score_text = response.content.strip()
+            print(f"[DEBUG] Overall CV match LLM response: {score_text}")
+            
+            # Extract number
+            import re
+            numbers = re.findall(r'0?\.\d+|1\.0|1', score_text)
+            if numbers:
+                score = float(numbers[0])
+                if 0.0 <= score <= 1.0:
+                    print(f"[DEBUG] Overall CV match score: {score}")
+                    return score
+            
+            # Fallback
+            print(f"[WARNING] Could not parse CV match score from: {score_text}")
+            return 0.5
+            
+        except Exception as e:
+            print(f"[ERROR] Overall CV match calculation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return 0.5

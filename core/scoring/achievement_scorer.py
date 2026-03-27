@@ -170,6 +170,9 @@ Scores:"""
                 max_tokens=len(achievements) * 15
             )
             
+            print(f"[DEBUG] LLM Response for {len(achievements)} achievements:")
+            print(f"[DEBUG] {response.content[:500]}")
+            
             # Parse scores from response
             scores = []
             lines = response.content.strip().split('\n')
@@ -188,6 +191,7 @@ Scores:"""
                             score = float(part)
                             if 0.0 <= score <= 1.0:
                                 scores.append(score)
+                                print(f"[DEBUG] Parsed score: {score}")
                                 break
                         except ValueError:
                             continue
@@ -196,16 +200,20 @@ Scores:"""
             
             # Ensure we have enough scores (fallback to 0.5 if parsing failed)
             while len(scores) < len(achievements):
+                print(f"[DEBUG] Adding fallback score 0.5 (parsed {len(scores)}/{len(achievements)})")
                 scores.append(0.5)
+            
+            print(f"[DEBUG] Final scores: {scores[:len(achievements)]}")
             
             # Return only the number of scores we need
             return scores[:len(achievements)]
             
         except Exception as e:
             # Fallback to neutral scores if LLM fails
-            print(f"Warning: LLM batch scoring failed: {e}")
+            print(f"[ERROR] LLM batch scoring failed: {e}")
+            import traceback
+            traceback.print_exc()
             return [0.5] * len(achievements)
-            raise ValueError(f"Weights must sum to 1.0, got {total}")
     
     def score_achievements(
         self,

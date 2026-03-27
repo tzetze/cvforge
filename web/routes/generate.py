@@ -414,14 +414,21 @@ def analyze():
         session['selected_certifications'] = selected_content.certifications
         session['selected_projects'] = selected_content.projects
         
-        # Calculate overall match from skill_match_rate and average_score
+        # Calculate overall CV match using LLM (includes summary, descriptions, achievements)
+        logger.info("Calculating overall CV match with LLM")
+        overall_match_score = selector.calculate_overall_cv_match(
+            cv_data=tailored_cv_data,
+            job_requirements=job_info,
+            job_description=job_description,
+            llm=llm
+        )
+        overall_match = overall_match_score * 100  # Convert to percentage
+        
+        # Store match data
         match_summary = selected_content.job_match_summary
         if match_summary:
-            skill_match = match_summary.get('skill_match_rate', 0)
-            avg_score = match_summary.get('average_score', 0)
-            overall_match = (skill_match * 0.6 + avg_score * 0.4) * 100  # Weighted average as percentage
-        else:
-            overall_match = 0
+            match_summary['overall_cv_match'] = overall_match_score
+        
         session['match_score'] = overall_match
         session['job_match_summary'] = match_summary
         
