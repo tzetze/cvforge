@@ -133,7 +133,7 @@ class AchievementScorer:
         # Truncate job description if too long
         job_desc_preview = job_description[:800] + "..." if len(job_description) > 800 else job_description
         
-        prompt = f"""Score each achievement's relevance to this job position (0.0 to 1.0).
+        prompt = f"""You are evaluating how relevant each achievement is to a job position.
 
 Job Title: {job_requirements.title}
 Company: {job_requirements.company or "Not specified"}
@@ -141,24 +141,29 @@ Company: {job_requirements.company or "Not specified"}
 Required Skills: {required_skills}
 Preferred Skills: {preferred_skills}
 
-Job Description Summary:
+Job Description:
 {job_desc_preview}
 
 Achievements to Score:
 {achievements_text}
 
-Instructions:
-1. Consider semantic similarity, not just exact keyword matching
-2. Recognize abbreviations and variations (e.g., "JS" = "JavaScript", "K8s" = "Kubernetes")
-3. Evaluate if the achievement demonstrates relevant experience for this role
-4. Consider the impact level and quantifiable results
-5. Higher scores for achievements that directly relate to job requirements
-6. Lower scores for generic or unrelated achievements
+SCORING GUIDELINES:
+- 0.9-1.0: Directly matches job requirements, demonstrates key skills
+- 0.7-0.8: Highly relevant, shows related experience
+- 0.5-0.6: Moderately relevant, some transferable skills
+- 0.3-0.4: Somewhat relevant, tangential experience
+- 0.0-0.2: Not relevant to this position
 
-Output format (one score per line, ONLY the number):
-1. 0.85
-2. 0.62
-3. 0.91
+IMPORTANT:
+- Consider semantic similarity (e.g., "Go" = "Golang", "K8s" = "Kubernetes")
+- Look for skill matches, not just exact keywords
+- Value quantifiable results and impact
+- An achievement with Go and Kubernetes for a Go/Kubernetes job should score 0.8-0.9
+
+Output ONLY the numeric scores, one per line:
+0.85
+0.62
+0.91
 ...
 
 Scores:"""
@@ -247,6 +252,9 @@ Scores:"""
         # Get LLM relevance scores in batch if LLM is provided
         llm_scores = []
         if llm and all_achievements:
+            print(f"[DEBUG] Calling LLM batch scoring for {len(all_achievements)} achievements")
+            print(f"[DEBUG] LLM provider: {type(llm).__name__}")
+            print(f"[DEBUG] Job title: {job_requirements.title}")
             try:
                 llm_scores = self.llm_score_achievements_batch(
                     achievements=all_achievements,
@@ -255,11 +263,16 @@ Scores:"""
                     job_description=job_description,
                     llm=llm,
                 )
+                print(f"[DEBUG] LLM batch scoring returned {len(llm_scores)} scores: {llm_scores}")
             except Exception as e:
-                print(f"Warning: LLM batch scoring failed, using fallback: {e}")
+                print(f"[ERROR] LLM batch scoring failed, using fallback: {e}")
+                import traceback
+                traceback.print_exc()
                 llm_scores = [0.5] * len(all_achievements)
         else:
             # Fallback to neutral scores if no LLM
+            print(f"[WARNING] No LLM provided or no achievements, using fallback scores")
+            print(f"[DEBUG] llm={llm}, all_achievements count={len(all_achievements) if all_achievements else 0}")
             llm_scores = [0.5] * len(all_achievements)
         
         # Score each achievement with its LLM score
