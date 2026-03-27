@@ -188,19 +188,30 @@ Scores:"""
                     continue
                     
                 try:
-                    # Try to extract number from various formats
-                    # "1. 0.85" or "0.85" or "1: 0.85"
-                    parts = re.split(r'[.:\s]+', line)
-                    for part in parts:
+                    # Try to parse the line directly as a float first
+                    try:
+                        score = float(line)
+                        if 0.0 <= score <= 1.0:
+                            scores.append(score)
+                            print(f"[DEBUG] Parsed score: {score} from line: '{line}'")
+                            continue
+                    except ValueError:
+                        pass
+                    
+                    # If that fails, try to extract number from formats like "1. 0.85" or "1: 0.85"
+                    # Use regex to find decimal numbers
+                    matches = re.findall(r'\b\d*\.?\d+\b', line)
+                    for match in matches:
                         try:
-                            score = float(part)
+                            score = float(match)
                             if 0.0 <= score <= 1.0:
                                 scores.append(score)
-                                print(f"[DEBUG] Parsed score: {score}")
+                                print(f"[DEBUG] Parsed score: {score} from line: '{line}'")
                                 break
                         except ValueError:
                             continue
-                except Exception:
+                except Exception as e:
+                    print(f"[DEBUG] Failed to parse line '{line}': {e}")
                     continue
             
             # Ensure we have enough scores (fallback to 0.5 if parsing failed)
