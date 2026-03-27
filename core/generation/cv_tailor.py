@@ -142,7 +142,7 @@ class CVTailoringEngine:
         
         This method tailors ALL achievements upfront before scoring/selection,
         preserving original text for comparison. Returns a new CVData object
-        with tailored achievements.
+        with tailored achievements, summary, and experience descriptions.
         
         Args:
             cv_data: Complete CV data
@@ -150,25 +150,38 @@ class CVTailoringEngine:
             job_description: Original job description text (optional, for better context)
             
         Returns:
-            New CVData with tailored achievements (original text preserved in metadata)
+            New CVData with tailored content (original text preserved in metadata)
         """
         # Create a deep copy to avoid modifying original
         tailored_cv = deepcopy(cv_data)
         
         # Tailor summary if it exists
         if tailored_cv.summary and self.rewrite_summary:
+            # Store original summary in first experience's first achievement keywords
+            original_summary = tailored_cv.summary
+            
             # Create a minimal job match summary for context
             job_match_summary = {
                 "matched_skills": list(job_requirements.required_skills or [])[:5],
                 "match_score": 0.0  # Not calculated yet
             }
             
-            tailored_cv.summary = self._tailor_summary(
+            tailored_summary = self._tailor_summary(
                 tailored_cv.summary,
                 job_requirements,
                 job_match_summary,
                 job_description
             )
+            
+            tailored_cv.summary = tailored_summary
+            
+            # Store original summary in first achievement's keywords for retrieval
+            if tailored_cv.experience and tailored_cv.experience[0].achievements:
+                first_ach = tailored_cv.experience[0].achievements[0]
+                keywords = list(first_ach.keywords or [])
+                if not any(k.startswith("__original_summary__:") for k in keywords):
+                    keywords.append(f"__original_summary__:{original_summary}")
+                first_ach.keywords = keywords
         
         # Tailor all experiences and achievements
         if self.rewrite_achievements:
@@ -176,6 +189,26 @@ class CVTailoringEngine:
             
             for exp in tailored_cv.experience:
                 tailored_exp = exp.model_copy(deep=True)
+                
+                # Tailor experience description if it exists
+                if exp.description:
+                    original_description = exp.description
+                    tailored_description = self._tailor_experience_description(
+                        exp.description,
+                        exp.position,
+                        exp.company,
+                        job_requirements,
+                        job_description
+                    )
+                    tailored_exp.description = tailored_description
+                    
+                    # Store original description in first achievement's keywords
+                    if tailored_exp.achievements:
+                        first_ach = tailored_exp.achievements[0]
+                        keywords = list(first_ach.keywords or [])
+                        if not any(k.startswith("__original_description__:") for k in keywords):
+                            keywords.append(f"__original_description__:{original_description}")
+                        first_ach.keywords = keywords
                 
                 if exp.achievements:
                     # Convert achievements to dict format for tailoring
@@ -203,7 +236,6 @@ class CVTailoringEngine:
                         tailored_ach = ach.model_copy(deep=True)
                         
                         # Store original text in keywords for comparison
-                        # (we'll use a special format to identify it)
                         original_keywords = list(tailored_ach.keywords or [])
                         if not any(k.startswith("__original__:") for k in original_keywords):
                             original_keywords.append(f"__original__:{ach.text}")
@@ -306,6 +338,137 @@ Output the rewritten summary text only:"""
             # Fallback to original on error
             print(f"Warning: Failed to tailor summary: {e}")
             return original_summary
+    
+    def _tailor_experience_description(
+        self,
+        original_description: str,
+        position: str,
+        company: str,
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> str:
+        """Tailor experience description for the job."""
+        
+        # Get relevant job skills
+        job_skills = []
+        if job_requirements.required_skills:
+            job_skills.extend(job_requirements.required_skills[:5])
+        if job_requirements.technologies:
+            job_skills.extend(list(job_requirements.technologies)[:5])
+        
+        # Include job context
+        job_context = ""
+        if job_description:
+            job_desc_preview = job_description[:300] + "..." if len(job_description) > 300 else job_description
+            job_context = f"""
+
+Job Posting Context:
+{job_desc_preview}
+"""
+        
+        prompt = f"""Rewrite this role description to emphasize relevance for a {job_requirements.title} position.
+
+This is a ROLE OVERVIEW/SUMMARY describing the position's responsibilities and scope, NOT an achievement or accomplishment.
+
+Original Role Description:
+{original_description}
+
+Position: {position} at {company}
+Target Job Requirements: {", ".join(job_skills[:5])}{job_context}
+
+CRITICAL INSTRUCTIONS:
+- Output ONLY the rewritten role description text
+- Do NOT include explanations, notes, or commentary
+- This should be a SUMMARY of the role's responsibilities and scope (like "Led a team of...", "Responsible for...", "Managed...")
+- Do NOT write it as an achievement or accomplishment
+- Keep it concise (2-3 sentences describing the role)
+- Keep core responsibilities truthful and accurate
+- Emphasize aspects of the role relevant to the target position
+- Use keywords from the job description naturally
+- Write in past tense for the role description
+- Maintain professional tone
+- Do NOT add false information or exaggerate
+
+Output the rewritten role description only:"""
+        
+        try:
+            response = self.llm.generate(
+                prompt=prompt,
+                temperature=0.7,
+                max_tokens=200
+            )
+            
+            tailored = response.content.strip()
+            tailored = self._clean_llm_response(tailored)
+            
+            # Fallback to original if response is too short or seems invalid
+            if len(tailored) < 20 or not tailored:
+                return original_description
+            
+            return tailored
+            
+        except Exception as e:
+            # Fallback to original on error
+            print(f"Warning: Failed to tailor experience description: {e}")
+            return original_description
+    
+    def retailor_summary(
+        self,
+        original_summary: str,
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> str:
+        """
+        Re-tailor the professional summary.
+        
+        Args:
+            original_summary: Original summary text
+            job_requirements: Job requirements
+            job_description: Optional job description text
+            
+        Returns:
+            New tailored summary text
+        """
+        job_match_summary = {
+            "matched_skills": list(job_requirements.required_skills or [])[:5],
+            "match_score": 0.0
+        }
+        
+        return self._tailor_summary(
+            original_summary,
+            job_requirements,
+            job_match_summary,
+            job_description
+        )
+    
+    def retailor_experience_description(
+        self,
+        original_description: str,
+        position: str,
+        company: str,
+        job_requirements: JobRequirements,
+        job_description: Optional[str] = None
+    ) -> str:
+        """
+        Re-tailor an experience description.
+        
+        Args:
+            original_description: Original description text
+            position: Job position
+            company: Company name
+            job_requirements: Job requirements
+            job_description: Optional job description text
+            
+        Returns:
+            New tailored description text
+        """
+        return self._tailor_experience_description(
+            original_description,
+            position,
+            company,
+            job_requirements,
+            job_description
+        )
     
     def _generate_summary(
         self,

@@ -194,12 +194,42 @@ def review_tailored():
         # Reconstruct tailored CV data from dict
         tailored_cv_data = CVData(**tailored_cv_dict)
         
+        # Extract original summary from first achievement's keywords
+        original_summary = original_cv_data.summary
+        tailored_summary = tailored_cv_data.summary
+        if tailored_cv_data.experience and tailored_cv_data.experience[0].achievements:
+            first_ach = tailored_cv_data.experience[0].achievements[0]
+            for keyword in (first_ach.keywords or []):
+                if isinstance(keyword, str) and keyword.startswith("__original_summary__:"):
+                    original_summary = keyword[len("__original_summary__:"):]
+                    break
+        
+        summary_comparison = {
+            'original': original_summary,
+            'tailored': tailored_summary
+        } if original_summary and tailored_summary else None
+        
         # Prepare comparison data for template
         experiences_comparison = []
         for i, tailored_exp in enumerate(tailored_cv_data.experience):
             original_exp = original_cv_data.experience[i] if i < len(original_cv_data.experience) else None
             
             if original_exp:
+                # Extract original description from first achievement's keywords
+                original_description = original_exp.description
+                tailored_description = tailored_exp.description
+                if tailored_exp.achievements:
+                    first_ach = tailored_exp.achievements[0]
+                    for keyword in (first_ach.keywords or []):
+                        if isinstance(keyword, str) and keyword.startswith("__original_description__:"):
+                            original_description = keyword[len("__original_description__:"):]
+                            break
+                
+                description_comparison = {
+                    'original': original_description,
+                    'tailored': tailored_description
+                } if original_description and tailored_description else None
+                
                 achievements_comparison = []
                 for j, tailored_ach in enumerate(tailored_exp.achievements):
                     original_ach = original_exp.achievements[j] if j < len(original_exp.achievements) else None
@@ -225,11 +255,13 @@ def review_tailored():
                 experiences_comparison.append({
                     'company': tailored_exp.company,
                     'position': tailored_exp.position,
+                    'description': description_comparison,
                     'achievements': achievements_comparison
                 })
         
         return render_template(
             'generate/review_tailored.html',
+            summary=summary_comparison,
             experiences=experiences_comparison,
             job_title=job_info_dict.get('title') or session.get('job_title'),
             job_company=job_info_dict.get('company') or session.get('job_company'),
@@ -328,10 +360,176 @@ def reroll_achievement():
         logger.error(f"Error re-rolling achievement: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
-        flash(f'Error: {str(e)}', 'danger')
-        return redirect(url_for('generate.job_input'))
 
-    return render_template('generate/job_input.html')
+@generate_bp.route('/reroll-summary', methods=['POST'])
+def reroll_summary():
+    """Re-tailor the professional summary via AJAX."""
+    try:
+        # Get tailored CV data and job info from session
+        tailored_cv_dict = session.get('tailored_cv_data')
+        job_info_dict = session.get('job_info', {})
+        job_description = session.get('job_description')
+        
+        if not tailored_cv_dict or not job_description:
+            return jsonify({'success': False, 'error': 'Session data missing'}), 400
+        
+        # Reconstruct CVData and JobRequirements
+        from core.models import CVData
+        tailored_cv_data = CVData(**tailored_cv_dict)
+        
+        from core.job.parser import JobRequirements
+        job_requirements = JobRequirements(
+            title=job_info_dict.get('title', 'Position'),
+            company=job_info_dict.get('company'),
+            required_skills=job_info_dict.get('required_skills', []),
+            preferred_skills=job_info_dict.get('preferred_skills', []),
+            keywords=set(job_info_dict.get('keywords', []))
+        )
+        
+        # Get original summary from first achievement's keywords
+        original_summary = tailored_cv_data.summary
+        if tailored_cv_data.experience and tailored_cv_data.experience[0].achievements:
+            first_ach = tailored_cv_data.experience[0].achievements[0]
+            for keyword in (first_ach.keywords or []):
+                if isinstance(keyword, str) and keyword.startswith("__original_summary__:"):
+                    original_summary = keyword[len("__original_summary__:"):]
+                    break
+        
+        # Load settings and initialize LLM
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Initialize tailoring engine
+        cv_gen = settings.cv_generation
+        tailor_config = {
+            'max_summary_length': cv_gen.get('max_summary_length', 150),
+            'rewrite_summary': cv_gen.get('rewrite_summary', True),
+        }
+        
+        from core.generation.cv_tailor import CVTailoringEngine
+        tailor = CVTailoringEngine(llm, config=tailor_config)
+        
+        # Re-tailor the summary
+        new_summary = tailor.retailor_summary(
+            original_summary=original_summary,
+            job_requirements=job_requirements,
+            job_description=job_description
+        )
+        
+        # Update the summary in CV data
+        tailored_cv_data.summary = new_summary
+        
+        # Update session with modified CV data
+        tailored_cv_dict = tailored_cv_data.model_dump(mode='json')
+        session['tailored_cv_data'] = tailored_cv_dict
+        session.modified = True
+        
+        logger.info("Re-rolled professional summary")
+        
+        return jsonify({
+            'success': True,
+            'new_text': new_summary
+        })
+        
+    except Exception as e:
+        logger.error(f"Error re-rolling summary: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@generate_bp.route('/reroll-description', methods=['POST'])
+def reroll_description():
+    """Re-tailor an experience description via AJAX."""
+    try:
+        data = request.get_json()
+        exp_index = data.get('exp_index')
+        
+        if exp_index is None:
+            return jsonify({'success': False, 'error': 'Missing experience index'}), 400
+        
+        # Get tailored CV data and job info from session
+        tailored_cv_dict = session.get('tailored_cv_data')
+        job_info_dict = session.get('job_info', {})
+        job_description = session.get('job_description')
+        
+        if not tailored_cv_dict or not job_description:
+            return jsonify({'success': False, 'error': 'Session data missing'}), 400
+        
+        # Reconstruct CVData and JobRequirements
+        from core.models import CVData
+        tailored_cv_data = CVData(**tailored_cv_dict)
+        
+        from core.job.parser import JobRequirements
+        job_requirements = JobRequirements(
+            title=job_info_dict.get('title', 'Position'),
+            company=job_info_dict.get('company'),
+            required_skills=job_info_dict.get('required_skills', []),
+            preferred_skills=job_info_dict.get('preferred_skills', []),
+            keywords=set(job_info_dict.get('keywords', []))
+        )
+        
+        # Get the experience
+        if exp_index >= len(tailored_cv_data.experience):
+            return jsonify({'success': False, 'error': 'Experience index out of range'}), 400
+        
+        experience = tailored_cv_data.experience[exp_index]
+        
+        # Get original description from first achievement's keywords
+        original_description = experience.description
+        if experience.achievements:
+            first_ach = experience.achievements[0]
+            for keyword in (first_ach.keywords or []):
+                if isinstance(keyword, str) and keyword.startswith("__original_description__:"):
+                    original_description = keyword[len("__original_description__:"):]
+                    break
+        
+        # Load settings and initialize LLM
+        from core.data_manager import DataManager
+        data_manager = DataManager()
+        settings = data_manager.load_settings()
+        
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Initialize tailoring engine
+        cv_gen = settings.cv_generation
+        tailor_config = {
+            'rewrite_achievements': cv_gen.get('rewrite_achievements', True),
+        }
+        
+        from core.generation.cv_tailor import CVTailoringEngine
+        tailor = CVTailoringEngine(llm, config=tailor_config)
+        
+        # Re-tailor the description
+        new_description = tailor.retailor_experience_description(
+            original_description=original_description,
+            position=experience.position,
+            company=experience.company,
+            job_requirements=job_requirements,
+            job_description=job_description
+        )
+        
+        # Update the description in the experience
+        experience.description = new_description
+        
+        # Update session with modified CV data
+        tailored_cv_dict = tailored_cv_data.model_dump(mode='json')
+        session['tailored_cv_data'] = tailored_cv_dict
+        session.modified = True
+        
+        logger.info(f"Re-rolled description for experience {exp_index}")
+        
+        return jsonify({
+            'success': True,
+            'new_text': new_description
+        })
+        
+    except Exception as e:
+        logger.error(f"Error re-rolling description: {e}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @generate_bp.route('/analyze')

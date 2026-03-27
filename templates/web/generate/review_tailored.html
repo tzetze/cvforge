@@ -3,14 +3,14 @@
 {% block title %}Review Tailored Content - CVForge{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Review Tailored Achievements</h2>
+<h2 class="mb-4">Review Tailored Content</h2>
 
 <div class="row">
     <div class="col-lg-11 mx-auto">
         <!-- Info Alert -->
         <div class="alert alert-info mb-4">
             <i class="bi bi-info-circle"></i>
-            <strong>All achievements have been tailored for:</strong>
+            <strong>All content has been tailored for:</strong>
             {% if job_title and job_title != 'None' %}
             {{ job_title }}
             {% if job_company and job_company != 'None' %} at {{ job_company }}{% endif %}
@@ -21,6 +21,60 @@
             <small>Review the changes below. The tailored versions emphasize relevant skills and keywords for this
                 position.</small>
         </div>
+
+        <!-- Professional Summary -->
+        {% if summary %}
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-badge"></i>
+                    Professional Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Original Summary -->
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-secondary me-2">Original</span>
+                        </div>
+                        <div class="p-3 bg-light rounded">
+                            <p class="mb-0">{{ summary.original }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Tailored Summary -->
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <span class="badge bg-success me-2">Tailored</span>
+                                <small class="text-muted">
+                                    <i class="bi bi-arrow-right"></i> Optimized for job
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary reroll-summary-btn"
+                                title="Re-generate summary">
+                                <i class="bi bi-arrow-clockwise"></i> Re-roll
+                            </button>
+                        </div>
+                        <div class="p-3 bg-success bg-opacity-10 rounded border border-success" id="summary-content">
+                            <p class="mb-0 text-success-emphasis summary-text">{{ summary.tailored }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Indicator -->
+                {% if summary.original != summary.tailored %}
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-check-circle text-success"></i>
+                        Summary tailored to emphasize job-relevant experience
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Job Requirements Summary (Collapsible) -->
         {% if job_info %}
@@ -92,6 +146,61 @@
                 </h5>
             </div>
             <div class="card-body">
+                <!-- Experience Description -->
+                {% if exp.description %}
+                <div class="mb-4 pb-4 border-bottom">
+                    <h6 class="text-muted mb-3">
+                        <i class="bi bi-file-text"></i> Role Description
+                    </h6>
+                    <div class="row">
+                        <!-- Original Description -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-secondary me-2">Original</span>
+                            </div>
+                            <div class="p-3 bg-light rounded">
+                                <p class="mb-0">{{ exp.description.original }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Tailored Description -->
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div>
+                                    <span class="badge bg-success me-2">Tailored</span>
+                                    <small class="text-muted">
+                                        <i class="bi bi-arrow-right"></i> Optimized for job
+                                    </small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary reroll-description-btn"
+                                    data-exp-index="{{ exp_index }}" title="Re-generate description">
+                                    <i class="bi bi-arrow-clockwise"></i> Re-roll
+                                </button>
+                            </div>
+                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success"
+                                id="description-{{ exp_index }}">
+                                <p class="mb-0 text-success-emphasis description-text">{{ exp.description.tailored }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change Indicator -->
+                    {% if exp.description.original != exp.description.tailored %}
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Description tailored to emphasize job-relevant responsibilities
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Achievements -->
+                <h6 class="text-muted mb-3">
+                    <i class="bi bi-star"></i> Key Achievements
+                </h6>
                 {% for achievement in exp.achievements %}
                 <div class="achievement-comparison mb-4 {% if not loop.last %}border-bottom pb-4{% endif %}">
                     <div class="row">
@@ -212,8 +321,9 @@
 </div>
 
 <script>
-    // Re-roll achievement functionality
+    // Re-roll functionality
     document.addEventListener('DOMContentLoaded', function () {
+        // Re-roll achievement functionality
         const rerollButtons = document.querySelectorAll('.reroll-btn');
 
         rerollButtons.forEach(button => {
@@ -271,6 +381,128 @@
                 } catch (error) {
                     console.error('Error:', error);
                     alert('Failed to re-roll achievement. Please try again.');
+                } finally {
+                    // Re-enable button
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            });
+        });
+
+        // Re-roll summary functionality (OUTSIDE the forEach loop)
+        const rerollSummaryBtn = document.querySelector('.reroll-summary-btn');
+        if (rerollSummaryBtn) {
+            rerollSummaryBtn.addEventListener('click', async function () {
+                const summaryDiv = document.getElementById('summary-content');
+                const summaryText = summaryDiv.querySelector('.summary-text');
+
+                // Disable button and show loading state
+                this.disabled = true;
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Re-rolling...';
+
+                try {
+                    const response = await fetch('{{ url_for("generate.reroll_summary") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Animate the change
+                        summaryDiv.style.transition = 'opacity 0.3s';
+                        summaryDiv.style.opacity = '0.3';
+
+                        setTimeout(() => {
+                            summaryText.textContent = data.new_text;
+                            summaryDiv.style.opacity = '1';
+
+                            // Show success feedback
+                            const feedback = document.createElement('div');
+                            feedback.className = 'alert alert-success alert-dismissible fade show mt-2';
+                            feedback.innerHTML = `
+                            <i class="bi bi-check-circle"></i> Summary re-generated successfully!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                            summaryDiv.appendChild(feedback);
+
+                            // Auto-dismiss after 3 seconds
+                            setTimeout(() => {
+                                feedback.remove();
+                            }, 3000);
+                        }, 300);
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to re-roll summary'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to re-roll summary. Please try again.');
+                } finally {
+                    // Re-enable button
+                    this.disabled = false;
+                    this.innerHTML = originalHtml;
+                }
+            });
+        }
+
+        // Re-roll description functionality
+        const rerollDescriptionBtns = document.querySelectorAll('.reroll-description-btn');
+        rerollDescriptionBtns.forEach(button => {
+            button.addEventListener('click', async function () {
+                const expIndex = parseInt(this.dataset.expIndex);
+                const descriptionDiv = document.getElementById(`description-${expIndex}`);
+                const descriptionText = descriptionDiv.querySelector('.description-text');
+
+                // Disable button and show loading state
+                this.disabled = true;
+                const originalHtml = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Re-rolling...';
+
+                try {
+                    const response = await fetch('{{ url_for("generate.reroll_description") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            exp_index: expIndex
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Animate the change
+                        descriptionDiv.style.transition = 'opacity 0.3s';
+                        descriptionDiv.style.opacity = '0.3';
+
+                        setTimeout(() => {
+                            descriptionText.textContent = data.new_text;
+                            descriptionDiv.style.opacity = '1';
+
+                            // Show success feedback
+                            const feedback = document.createElement('div');
+                            feedback.className = 'alert alert-success alert-dismissible fade show mt-2';
+                            feedback.innerHTML = `
+                            <i class="bi bi-check-circle"></i> Description re-generated successfully!
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                            descriptionDiv.appendChild(feedback);
+
+                            // Auto-dismiss after 3 seconds
+                            setTimeout(() => {
+                                feedback.remove();
+                            }, 3000);
+                        }, 300);
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to re-roll description'));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to re-roll description. Please try again.');
                 } finally {
                     // Re-enable button
                     this.disabled = false;
