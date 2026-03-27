@@ -311,21 +311,33 @@ class LLMConfig(BaseModel):
 
 
 class ScoringWeights(BaseModel):
-    """Weights for achievement scoring."""
-    llm_relevance: float = Field(default=0.50, ge=0.0, le=1.0)
-    impact_level: float = Field(default=0.25, ge=0.0, le=1.0)
-    recency: float = Field(default=0.25, ge=0.0, le=1.0)
+    """
+    Weights for achievement scoring as integers (relative weights).
+    Will be automatically normalized to ratios that sum to 1.0.
+    
+    Examples:
+        llm_relevance: 2
+        impact_level: 1
+        recency: 1
+        # Will be normalized to: 0.5, 0.25, 0.25
+        
+        llm_relevance: 3
+        impact_level: 2
+        recency: 1
+        # Will be normalized to: 0.5, 0.333, 0.167
+    """
+    llm_relevance: int = Field(default=2, ge=0)
+    impact_level: int = Field(default=1, ge=0)
+    recency: int = Field(default=1, ge=0)
 
     @model_validator(mode='after')
-    def validate_weights_sum(self) -> 'ScoringWeights':
-        """Ensure weights sum to approximately 1.0."""
-        total = (
-            self.llm_relevance +
-            self.impact_level +
-            self.recency
-        )
-        if not (0.99 <= total <= 1.01):  # Allow small floating point errors
-            raise ValueError(f"Scoring weights must sum to 1.0, got {total}")
+    def validate_weights(self) -> 'ScoringWeights':
+        """Validate that weights are not all zero."""
+        total = self.llm_relevance + self.impact_level + self.recency
+        
+        if total == 0:
+            raise ValueError("Scoring weights cannot all be zero")
+        
         return self
 
 

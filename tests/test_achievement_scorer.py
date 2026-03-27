@@ -94,31 +94,78 @@ class TestAchievementScorer:
     def test_scorer_initialization(self):
         """Test scorer initialization with default weights."""
         scorer = AchievementScorer()
-        assert scorer.weights["llm_relevance"] == 0.50
-        assert scorer.weights["impact_level"] == 0.25
-        assert scorer.weights["recency"] == 0.25
+        # Default: llm_relevance: 2, impact_level: 1, recency: 1
+        # Normalized: 0.5, 0.25, 0.25
+        assert abs(scorer.weights["llm_relevance"] - 0.50) < 0.01
+        assert abs(scorer.weights["impact_level"] - 0.25) < 0.01
+        assert abs(scorer.weights["recency"] - 0.25) < 0.01
         
         # Check weights sum to 1.0
         assert abs(sum(scorer.weights.values()) - 1.0) < 0.01
     
     def test_scorer_custom_weights(self):
-        """Test scorer with custom weights."""
+        """Test scorer with custom integer weights."""
         custom_weights = {
-            "llm_relevance": 0.60,
-            "impact_level": 0.20,
-            "recency": 0.20,
+            "llm_relevance": 3,
+            "impact_level": 1,
+            "recency": 1,
         }
         scorer = AchievementScorer(weights=custom_weights)
-        assert scorer.weights == custom_weights
+        # Should be normalized: 3/5=0.6, 1/5=0.2, 1/5=0.2
+        assert abs(scorer.weights["llm_relevance"] - 0.60) < 0.01
+        assert abs(scorer.weights["impact_level"] - 0.20) < 0.01
+        assert abs(scorer.weights["recency"] - 0.20) < 0.01
     
-    def test_scorer_invalid_weights(self):
-        """Test that invalid weights raise an error."""
-        invalid_weights = {
-            "llm_relevance": 0.50,
-            "impact_level": 0.30,
-            "recency": 0.30,  # Total = 1.10, invalid
+    def test_scorer_integer_weights(self):
+        """Test scorer with integer weights (should be normalized)."""
+        integer_weights = {
+            "llm_relevance": 2,
+            "impact_level": 1,
+            "recency": 1,
         }
-        with pytest.raises(ValueError, match="must sum to 1.0"):
+        scorer = AchievementScorer(weights=integer_weights)
+        
+        # Should be normalized to ratios
+        assert abs(scorer.weights["llm_relevance"] - 0.50) < 0.01
+        assert abs(scorer.weights["impact_level"] - 0.25) < 0.01
+        assert abs(scorer.weights["recency"] - 0.25) < 0.01
+        
+        # Check they sum to 1.0
+        assert abs(sum(scorer.weights.values()) - 1.0) < 0.01
+    
+    def test_scorer_mixed_integer_weights(self):
+        """Test scorer with different integer ratios."""
+        integer_weights = {
+            "llm_relevance": 3,
+            "impact_level": 2,
+            "recency": 1,
+        }
+        scorer = AchievementScorer(weights=integer_weights)
+        
+        # Should be normalized: 3/6=0.5, 2/6=0.333, 1/6=0.167
+        assert abs(scorer.weights["llm_relevance"] - 0.50) < 0.01
+        assert abs(scorer.weights["impact_level"] - 0.333) < 0.01
+        assert abs(scorer.weights["recency"] - 0.167) < 0.01
+    
+    
+    def test_scorer_negative_weights(self):
+        """Test that negative weights raise an error."""
+        invalid_weights = {
+            "llm_relevance": 2,
+            "impact_level": -1,
+            "recency": 1,
+        }
+        with pytest.raises(ValueError, match="cannot be negative"):
+            AchievementScorer(weights=invalid_weights)
+    
+    def test_scorer_zero_weights(self):
+        """Test that all-zero weights raise an error."""
+        invalid_weights = {
+            "llm_relevance": 0,
+            "impact_level": 0,
+            "recency": 0,
+        }
+        with pytest.raises(ValueError, match="cannot all be zero"):
             AchievementScorer(weights=invalid_weights)
     
     def test_score_impact_level(self, scorer, sample_achievement_high, 

@@ -6,7 +6,7 @@ each achievement matches a job description.
 """
 
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional, Set, Union
 from dataclasses import dataclass
 import re
 
@@ -37,24 +37,62 @@ class AchievementScorer:
     - Recency (25%)
     """
     
-    def __init__(self, weights: Optional[Dict[str, float]] = None):
+    def __init__(self, weights: Optional[Dict[str, int]] = None):
         """
         Initialize the scorer.
         
         Args:
-            weights: Optional custom scoring weights
+            weights: Optional custom scoring weights as integers (relative weights).
+                     Will be normalized to ratios that sum to 1.0.
+                     
+        Examples:
+            weights = {"llm_relevance": 2, "impact_level": 1, "recency": 1}
+            # Normalized to: {"llm_relevance": 0.5, "impact_level": 0.25, "recency": 0.25}
+            
+            weights = {"llm_relevance": 3, "impact_level": 2, "recency": 1}
+            # Normalized to: {"llm_relevance": 0.5, "impact_level": 0.333, "recency": 0.167}
         """
-        # Default weights (must sum to 1.0)
-        self.weights = weights or {
-            "llm_relevance": 0.50,
-            "impact_level": 0.25,
-            "recency": 0.25,
+        # Default weights (as integers)
+        default_weights = {
+            "llm_relevance": 2,
+            "impact_level": 1,
+            "recency": 1,
         }
         
-        # Validate weights
-        total = sum(self.weights.values())
-        if not (0.99 <= total <= 1.01):
-            raise ValueError(f"Weights must sum to 1.0, got {total}")
+        if weights is None:
+            weights = default_weights
+        
+        # Normalize integer weights to ratios
+        self.weights = self._normalize_weights(weights)
+    
+    def _normalize_weights(self, weights: Dict[str, int]) -> Dict[str, float]:
+        """
+        Normalize integer weights to ratios that sum to 1.0.
+        
+        Args:
+            weights: Dictionary of integer weight values
+            
+        Returns:
+            Normalized weights that sum to 1.0
+            
+        Raises:
+            ValueError: If weights are invalid
+        """
+        if not weights:
+            raise ValueError("Weights dictionary cannot be empty")
+        
+        # Check if any weight is negative
+        if any(w < 0 for w in weights.values()):
+            raise ValueError("Weights cannot be negative")
+        
+        total = sum(weights.values())
+        
+        if total == 0:
+            raise ValueError("Weights cannot all be zero")
+        
+        # Normalize to ratios
+        normalized = {key: value / total for key, value in weights.items()}
+        return normalized
     
     def llm_score_achievements_batch(
         self,

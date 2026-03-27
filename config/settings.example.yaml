@@ -93,13 +93,17 @@ cv_generation:
   # Maximum CV length in pages (approximate)
   max_pages: 2
 
-# Achievement Scoring Weights
+# Achievement Scoring Weights (as integers)
 # These weights determine how achievements are scored for relevance
-# Total should sum to 1.0
+# Specify as integers - they will be normalized to ratios automatically
+#
+# Examples:
+#   llm_relevance: 2, impact_level: 1, recency: 1  →  50%, 25%, 25%
+#   llm_relevance: 3, impact_level: 2, recency: 1  →  50%, 33%, 17%
 scoring:
-  llm_relevance: 0.50      # LLM-based semantic relevance to job (requires LLM)
-  impact_level: 0.25       # Achievement impact (high/medium/low)
-  recency: 0.25            # How recent the achievement is
+  llm_relevance: 2         # LLM-based semantic relevance to job (requires LLM)
+  impact_level: 1          # Achievement impact (high/medium/low)
+  recency: 1               # How recent the achievement is
 
 # Job Scraping Settings
 job_scraping:
