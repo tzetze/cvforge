@@ -60,6 +60,119 @@ class AchievementScorer:
         if not (0.99 <= total <= 1.01):
             raise ValueError(f"Weights must sum to 1.0, got {total}")
     
+    def llm_score_achievements_batch(
+        self,
+        achievements: List[Achievement],
+        experiences: List[Experience],
+        job_requirements: JobRequirements,
+        job_description: str,
+        llm,
+    ) -> List[float]:
+        """
+        Score multiple achievements using LLM in a single batch call.
+        
+        This is more cost-efficient than scoring individually.
+        
+        Args:
+            achievements: List of achievements to score
+            experiences: Corresponding experiences (same length as achievements)
+            job_requirements: Parsed job requirements
+            job_description: Full job description text
+            llm: LLM provider instance
+            
+        Returns:
+            List of scores (0.0-1.0) for each achievement
+        """
+        if not achievements:
+            return []
+        
+        # Build achievements text for prompt
+        achievements_text = ""
+        for i, (ach, exp) in enumerate(zip(achievements, experiences), 1):
+            skills_str = ", ".join(ach.skills) if ach.skills else "None"
+            achievements_text += f"{i}. {ach.text}\n   Skills: {skills_str}\n   Impact: {ach.impact.value}\n\n"
+        
+        # Get key requirements
+        required_skills = ", ".join(job_requirements.required_skills[:10]) if job_requirements.required_skills else "Not specified"
+        preferred_skills = ", ".join(job_requirements.preferred_skills[:10]) if job_requirements.preferred_skills else "Not specified"
+        
+        # Truncate job description if too long
+        job_desc_preview = job_description[:800] + "..." if len(job_description) > 800 else job_description
+        
+        prompt = f"""Score each achievement's relevance to this job position (0.0 to 1.0).
+
+Job Title: {job_requirements.title}
+Company: {job_requirements.company or "Not specified"}
+
+Required Skills: {required_skills}
+Preferred Skills: {preferred_skills}
+
+Job Description Summary:
+{job_desc_preview}
+
+Achievements to Score:
+{achievements_text}
+
+Instructions:
+1. Consider semantic similarity, not just exact keyword matching
+2. Recognize abbreviations and variations (e.g., "JS" = "JavaScript", "K8s" = "Kubernetes")
+3. Evaluate if the achievement demonstrates relevant experience for this role
+4. Consider the impact level and quantifiable results
+5. Higher scores for achievements that directly relate to job requirements
+6. Lower scores for generic or unrelated achievements
+
+Output format (one score per line, ONLY the number):
+1. 0.85
+2. 0.62
+3. 0.91
+...
+
+Scores:"""
+
+        try:
+            response = llm.generate(
+                prompt=prompt,
+                temperature=0.0,  # Deterministic scoring
+                max_tokens=len(achievements) * 15
+            )
+            
+            # Parse scores from response
+            scores = []
+            lines = response.content.strip().split('\n')
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                try:
+                    # Try to extract number from various formats
+                    # "1. 0.85" or "0.85" or "1: 0.85"
+                    parts = re.split(r'[.:\s]+', line)
+                    for part in parts:
+                        try:
+                            score = float(part)
+                            if 0.0 <= score <= 1.0:
+                                scores.append(score)
+                                break
+                        except ValueError:
+                            continue
+                except Exception:
+                    continue
+            
+            # Ensure we have enough scores (fallback to 0.5 if parsing failed)
+            while len(scores) < len(achievements):
+                scores.append(0.5)
+            
+            # Return only the number of scores we need
+            return scores[:len(achievements)]
+            
+        except Exception as e:
+            # Fallback to neutral scores if LLM fails
+            print(f"Warning: LLM batch scoring failed: {e}")
+            return [0.5] * len(achievements)
+            raise ValueError(f"Weights must sum to 1.0, got {total}")
+    
     def score_achievements(
         self,
         cv_data: CVData,
