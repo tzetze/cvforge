@@ -21,14 +21,13 @@
                 <h5 class="mb-0"><i class="bi bi-graph-up"></i> Overall Match Score</h5>
             </div>
             <div class="card-body text-center">
-                {% set skill_match = selected_content.job_match_summary.get('skill_match_rate', 0) %}
+                {% set llm_cv_match = selected_content.job_match_summary.get('overall_cv_match', 0) %}
                 {% set avg_score = selected_content.job_match_summary.get('average_score', 0) %}
-                {% set overall_match = (skill_match * 0.6 + avg_score * 0.4) * 100 %}
+                {% set overall_match = (llm_cv_match * 100) if llm_cv_match > 0 else (avg_score * 100) %}
                 <h1 class="display-3">{{ "%.0f"|format(overall_match) }}%</h1>
                 <p class="lead">Your CV matches this job</p>
                 <small class="text-muted">
-                    Skills: {{ "%.0f"|format(skill_match * 100) }}% |
-                    Relevance: {{ "%.0f"|format(avg_score * 100) }}%
+                    LLM-based semantic match including summary, experience descriptions, and achievements
                 </small>
             </div>
         </div>
