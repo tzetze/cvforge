@@ -80,6 +80,8 @@ class CVContentSelector:
         self,
         cv_data: CVData,
         job_requirements: JobRequirements,
+        job_description: str = "",
+        llm = None,
         verbose: bool = False
     ) -> SelectedContent:
         """
@@ -88,6 +90,8 @@ class CVContentSelector:
         Args:
             cv_data: Complete CV data
             job_requirements: Parsed job requirements
+            job_description: Full job description text
+            llm: LLM provider for semantic scoring (optional)
             verbose: If True, include detailed selection analysis
             
         Returns:
@@ -95,8 +99,10 @@ class CVContentSelector:
         """
         # Score all achievements
         scored_achievements = self.scorer.score_achievements(
-            cv_data,
-            job_requirements
+            cv_data=cv_data,
+            job_requirements=job_requirements,
+            job_description=job_description,
+            llm=llm
         )
         
         # Filter top achievements

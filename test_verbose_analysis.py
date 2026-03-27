@@ -78,4 +78,3 @@ else:
     print("\n❌ ERROR: No selection analysis found!")
     print("The verbose parameter may not be working correctly.")
 
-# Made with Bob

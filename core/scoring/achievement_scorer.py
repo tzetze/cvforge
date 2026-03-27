@@ -32,11 +32,9 @@ class AchievementScorer:
     Scores achievements based on relevance to job requirements.
     
     Uses a multi-factor scoring system:
-    - Keyword matching (30%)
-    - Skill matching (25%)
-    - Impact level (20%)
-    - Recency (15%)
-    - Semantic similarity (10%) - requires LLM
+    - LLM relevance score (50%) - semantic understanding of job match
+    - Impact level (25%)
+    - Recency (25%)
     """
     
     def __init__(self, weights: Optional[Dict[str, float]] = None):
@@ -48,11 +46,9 @@ class AchievementScorer:
         """
         # Default weights (must sum to 1.0)
         self.weights = weights or {
-            "keyword_match": 0.30,
-            "skill_match": 0.25,
-            "impact_level": 0.20,
-            "recency": 0.15,
-            "semantic_similarity": 0.10,
+            "llm_relevance": 0.50,
+            "impact_level": 0.25,
+            "recency": 0.25,
         }
         
         # Validate weights
@@ -177,7 +173,8 @@ Scores:"""
         self,
         cv_data: CVData,
         job_requirements: JobRequirements,
-        use_semantic: bool = False,
+        job_description: str = "",
+        llm = None,
     ) -> List[ScoredAchievement]:
         """
         Score all achievements in CV data against job requirements.
@@ -185,22 +182,52 @@ Scores:"""
         Args:
             cv_data: CV data with experiences and achievements
             job_requirements: Parsed job requirements
-            use_semantic: Whether to use semantic similarity (requires LLM)
+            job_description: Full job description text
+            llm: LLM provider for semantic scoring (optional, falls back to rule-based)
             
         Returns:
             List of ScoredAchievement objects, sorted by score (highest first)
         """
         scored_achievements = []
         
+        # Collect all achievements with their experiences
+        all_achievements = []
+        all_experiences = []
+        for experience in cv_data.experience:
+            for achievement in experience.achievements:
+                all_achievements.append(achievement)
+                all_experiences.append(experience)
+        
+        # Get LLM relevance scores in batch if LLM is provided
+        llm_scores = []
+        if llm and all_achievements:
+            try:
+                llm_scores = self.llm_score_achievements_batch(
+                    achievements=all_achievements,
+                    experiences=all_experiences,
+                    job_requirements=job_requirements,
+                    job_description=job_description,
+                    llm=llm,
+                )
+            except Exception as e:
+                print(f"Warning: LLM batch scoring failed, using fallback: {e}")
+                llm_scores = [0.5] * len(all_achievements)
+        else:
+            # Fallback to neutral scores if no LLM
+            llm_scores = [0.5] * len(all_achievements)
+        
+        # Score each achievement with its LLM score
+        idx = 0
         for experience in cv_data.experience:
             for achievement in experience.achievements:
                 score = self.score_achievement(
-                    achievement,
-                    experience,
-                    job_requirements,
-                    use_semantic=use_semantic,
+                    achievement=achievement,
+                    experience=experience,
+                    job_requirements=job_requirements,
+                    llm_relevance_score=llm_scores[idx],
                 )
                 scored_achievements.append(score)
+                idx += 1
         
         # Sort by total score (highest first)
         scored_achievements.sort(reverse=True)
@@ -212,7 +239,7 @@ Scores:"""
         achievement: Achievement,
         experience: Experience,
         job_requirements: JobRequirements,
-        use_semantic: bool = False,
+        llm_relevance_score: float = 0.5,
     ) -> ScoredAchievement:
         """
         Score a single achievement.
@@ -221,36 +248,21 @@ Scores:"""
             achievement: Achievement to score
             experience: Experience containing the achievement
             job_requirements: Job requirements
-            use_semantic: Whether to use semantic similarity
+            llm_relevance_score: Pre-computed LLM relevance score (0.0-1.0)
             
         Returns:
             ScoredAchievement object
         """
         breakdown = {}
         
-        # 1. Keyword matching (30%)
-        breakdown["keyword_match"] = self._score_keyword_match(
-            achievement, job_requirements
-        )
+        # 1. LLM relevance (50%) - semantic understanding of job match
+        breakdown["llm_relevance"] = llm_relevance_score
         
-        # 2. Skill matching (25%)
-        breakdown["skill_match"] = self._score_skill_match(
-            achievement, job_requirements
-        )
-        
-        # 3. Impact level (20%)
+        # 2. Impact level (25%)
         breakdown["impact_level"] = self._score_impact_level(achievement)
         
-        # 4. Recency (15%)
+        # 3. Recency (25%)
         breakdown["recency"] = self._score_recency(experience)
-        
-        # 5. Semantic similarity (10%)
-        if use_semantic:
-            breakdown["semantic_similarity"] = self._score_semantic_similarity(
-                achievement, job_requirements
-            )
-        else:
-            breakdown["semantic_similarity"] = 0.5  # Neutral score
         
         # Calculate weighted total
         total_score = sum(
@@ -265,81 +277,6 @@ Scores:"""
             score_breakdown=breakdown,
         )
     
-    def _score_keyword_match(
-        self,
-        achievement: Achievement,
-        job_requirements: JobRequirements,
-    ) -> float:
-        """
-        Score based on keyword matching.
-        
-        Returns score between 0.0 and 1.0.
-        """
-        if not job_requirements.keywords:
-            return 0.5  # Neutral score if no keywords
-        
-        # Get achievement text and keywords
-        achievement_text = achievement.text.lower()
-        achievement_keywords = set()
-        
-        if achievement.keywords:
-            achievement_keywords.update(k.lower() for k in achievement.keywords)
-        
-        # Extract words from achievement text
-        words = set(re.findall(r'\b\w+\b', achievement_text))
-        achievement_keywords.update(words)
-        
-        # Count matches
-        job_keywords = {k.lower() for k in job_requirements.keywords}
-        matches = achievement_keywords.intersection(job_keywords)
-        
-        if not job_keywords:
-            return 0.5
-        
-        # Calculate match ratio
-        match_ratio = len(matches) / len(job_keywords)
-        
-        # Scale to 0-1 range (cap at 50% match = 1.0 score)
-        score = min(match_ratio * 2.0, 1.0)
-        
-        return score
-    
-    def _score_skill_match(
-        self,
-        achievement: Achievement,
-        job_requirements: JobRequirements,
-    ) -> float:
-        """
-        Score based on skill matching.
-        
-        Returns score between 0.0 and 1.0.
-        """
-        # Get required skills from job
-        required_skills = set()
-        if job_requirements.required_skills:
-            required_skills.update(s.lower() for s in job_requirements.required_skills)
-        if job_requirements.technologies:
-            required_skills.update(t.lower() for t in job_requirements.technologies)
-        
-        if not required_skills:
-            return 0.5  # Neutral score if no required skills
-        
-        # Get achievement skills
-        achievement_skills = {s.lower() for s in achievement.skills}
-        
-        # Count matches
-        matches = achievement_skills.intersection(required_skills)
-        
-        if not achievement_skills:
-            return 0.0
-        
-        # Calculate match ratio
-        match_ratio = len(matches) / len(required_skills)
-        
-        # Scale to 0-1 range (cap at 40% match = 1.0 score)
-        score = min(match_ratio * 2.5, 1.0)
-        
-        return score
     
     def _score_impact_level(self, achievement: Achievement) -> float:
         """
@@ -401,23 +338,6 @@ Scores:"""
             # If date parsing fails, return neutral score
             return 0.5
     
-    def _score_semantic_similarity(
-        self,
-        achievement: Achievement,
-        job_requirements: JobRequirements,
-    ) -> float:
-        """
-        Score based on semantic similarity.
-        
-        This is a placeholder that returns a neutral score.
-        In a full implementation, this would use an LLM to compare
-        the semantic meaning of the achievement with job requirements.
-        
-        Returns score between 0.0 and 1.0.
-        """
-        # TODO: Implement LLM-based semantic similarity
-        # For now, return neutral score
-        return 0.5
     
     def filter_top_achievements(
         self,

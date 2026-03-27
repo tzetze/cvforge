@@ -97,11 +97,9 @@ cv_generation:
 # These weights determine how achievements are scored for relevance
 # Total should sum to 1.0
 scoring:
-  keyword_match: 0.30      # Direct keyword matching with job description
-  skill_match: 0.25        # Technical skills alignment
-  impact_level: 0.20       # Achievement impact (high/medium/low)
-  recency: 0.15           # How recent the achievement is
-  semantic_similarity: 0.10  # Semantic meaning similarity (requires LLM)
+  llm_relevance: 0.50      # LLM-based semantic relevance to job (requires LLM)
+  impact_level: 0.25       # Achievement impact (high/medium/low)
+  recency: 0.25            # How recent the achievement is
 
 # Job Scraping Settings
 job_scraping:

@@ -382,20 +382,27 @@ def analyze():
         
         # Score achievements with settings-based weights
         scorer_weights = {
-            'keyword_match': settings.scoring.keyword_match,
-            'skill_match': settings.scoring.skill_match,
+            'llm_relevance': settings.scoring.llm_relevance,
             'impact_level': settings.scoring.impact_level,
-            'recency': settings.scoring.recency,
-            'semantic_similarity': settings.scoring.semantic_similarity
+            'recency': settings.scoring.recency
         }
         scorer = AchievementScorer(weights=scorer_weights)
         selector = CVContentSelector(scorer, config=selector_config)
         
+        # Initialize LLM for scoring
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Get job description from session
+        job_description = session.get('job_description', '')
+        
         # Score and select from TAILORED CV data (not original)
-        logger.info("Scoring tailored achievements")
+        logger.info("Scoring tailored achievements with LLM")
         selected_content = selector.select_content(
             cv_data=tailored_cv_data,  # Use tailored version
             job_requirements=job_info,
+            job_description=job_description,
+            llm=llm,
             verbose=True
         )
         
@@ -519,18 +526,25 @@ def download():
         
         # Score achievements with settings-based weights
         scorer_weights = {
-            'keyword_match': settings.scoring.keyword_match,
-            'skill_match': settings.scoring.skill_match,
+            'llm_relevance': settings.scoring.llm_relevance,
             'impact_level': settings.scoring.impact_level,
-            'recency': settings.scoring.recency,
-            'semantic_similarity': settings.scoring.semantic_similarity
+            'recency': settings.scoring.recency
         }
         scorer = AchievementScorer(weights=scorer_weights)
         selector = CVContentSelector(scorer, config=selector_config)
         
+        # Initialize LLM for scoring
+        llm_manager = LLMManager(settings.model_dump())
+        llm = llm_manager.get_provider()
+        
+        # Get job description from session
+        job_description = session.get('job_description', '')
+        
         selected_content = selector.select_content(
             cv_data=cv_data,
-            job_requirements=job_info
+            job_requirements=job_info,
+            job_description=job_description,
+            llm=llm
         )
         
         # Use already-tailored content from session (set during preview)

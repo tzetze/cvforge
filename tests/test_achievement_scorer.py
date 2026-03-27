@@ -94,11 +94,9 @@ class TestAchievementScorer:
     def test_scorer_initialization(self):
         """Test scorer initialization with default weights."""
         scorer = AchievementScorer()
-        assert scorer.weights["keyword_match"] == 0.30
-        assert scorer.weights["skill_match"] == 0.25
-        assert scorer.weights["impact_level"] == 0.20
-        assert scorer.weights["recency"] == 0.15
-        assert scorer.weights["semantic_similarity"] == 0.10
+        assert scorer.weights["llm_relevance"] == 0.50
+        assert scorer.weights["impact_level"] == 0.25
+        assert scorer.weights["recency"] == 0.25
         
         # Check weights sum to 1.0
         assert abs(sum(scorer.weights.values()) - 1.0) < 0.01
@@ -106,11 +104,9 @@ class TestAchievementScorer:
     def test_scorer_custom_weights(self):
         """Test scorer with custom weights."""
         custom_weights = {
-            "keyword_match": 0.40,
-            "skill_match": 0.30,
-            "impact_level": 0.15,
-            "recency": 0.10,
-            "semantic_similarity": 0.05,
+            "llm_relevance": 0.60,
+            "impact_level": 0.20,
+            "recency": 0.20,
         }
         scorer = AchievementScorer(weights=custom_weights)
         assert scorer.weights == custom_weights
@@ -118,11 +114,9 @@ class TestAchievementScorer:
     def test_scorer_invalid_weights(self):
         """Test that invalid weights raise an error."""
         invalid_weights = {
-            "keyword_match": 0.50,
-            "skill_match": 0.30,
-            "impact_level": 0.10,
-            "recency": 0.10,  # Total = 1.05, invalid
-            "semantic_similarity": 0.05,
+            "llm_relevance": 0.50,
+            "impact_level": 0.30,
+            "recency": 0.30,  # Total = 1.10, invalid
         }
         with pytest.raises(ValueError, match="must sum to 1.0"):
             AchievementScorer(weights=invalid_weights)
@@ -145,37 +139,58 @@ class TestAchievementScorer:
         # 5 years ago should give a score around 0.5
         assert 0.4 <= score <= 0.6
     
-    def test_score_skill_match_perfect(self, scorer, sample_achievement_high, job_requirements):
-        """Test skill matching with perfect match."""
-        score = scorer._score_skill_match(sample_achievement_high, job_requirements)
-        # Should have high score due to Python, Kubernetes, Docker, Microservices match
-        assert score > 0.7
+    def test_score_skill_match_perfect(self, scorer, sample_achievement_high, recent_experience, job_requirements):
+        """Test LLM relevance scoring (replaces skill match)."""
+        # LLM scoring is tested via score_achievement with llm_relevance_score parameter
+        # This test is kept for backward compatibility but tests the new system
+        scored = scorer.score_achievement(
+            sample_achievement_high,
+            recent_experience,
+            job_requirements,
+            llm_relevance_score=0.9  # High relevance
+        )
+        assert scored.score_breakdown["llm_relevance"] == 0.9
     
-    def test_score_skill_match_partial(self, scorer, sample_achievement_medium, job_requirements):
-        """Test skill matching with partial match."""
-        score = scorer._score_skill_match(sample_achievement_medium, job_requirements)
-        # Should have lower score as Node.js and MongoDB are not in requirements
-        assert score < 0.5
+    def test_score_skill_match_partial(self, scorer, sample_achievement_medium, recent_experience, job_requirements):
+        """Test LLM relevance scoring with medium relevance."""
+        scored = scorer.score_achievement(
+            sample_achievement_medium,
+            recent_experience,
+            job_requirements,
+            llm_relevance_score=0.6  # Medium relevance
+        )
+        assert scored.score_breakdown["llm_relevance"] == 0.6
     
-    def test_score_skill_match_no_match(self, scorer, sample_achievement_low, job_requirements):
-        """Test skill matching with no match."""
-        score = scorer._score_skill_match(sample_achievement_low, job_requirements)
-        # PHP is not in requirements
-        assert score < 0.3
+    def test_score_skill_match_no_match(self, scorer, sample_achievement_low, old_experience, job_requirements):
+        """Test LLM relevance scoring with low relevance."""
+        scored = scorer.score_achievement(
+            sample_achievement_low,
+            old_experience,
+            job_requirements,
+            llm_relevance_score=0.2  # Low relevance
+        )
+        assert scored.score_breakdown["llm_relevance"] == 0.2
     
-    def test_score_keyword_match(self, scorer, sample_achievement_high, job_requirements):
-        """Test keyword matching."""
-        score = scorer._score_keyword_match(sample_achievement_high, job_requirements)
-        # Should match keywords like "architecture", "deployment"
-        assert score > 0.3
+    def test_score_keyword_match(self, scorer, sample_achievement_high, recent_experience, job_requirements):
+        """Test that LLM relevance replaces keyword matching."""
+        # Keyword matching is now part of LLM relevance scoring
+        scored = scorer.score_achievement(
+            sample_achievement_high,
+            recent_experience,
+            job_requirements,
+            llm_relevance_score=0.8
+        )
+        assert "llm_relevance" in scored.score_breakdown
+        assert scored.score_breakdown["llm_relevance"] == 0.8
     
-    def test_score_achievement_complete(self, scorer, sample_achievement_high, 
+    def test_score_achievement_complete(self, scorer, sample_achievement_high,
                                        recent_experience, job_requirements):
         """Test complete achievement scoring."""
         scored = scorer.score_achievement(
             sample_achievement_high,
             recent_experience,
-            job_requirements
+            job_requirements,
+            llm_relevance_score=0.8  # High LLM relevance
         )
         
         assert isinstance(scored, ScoredAchievement)
@@ -183,15 +198,14 @@ class TestAchievementScorer:
         assert scored.experience == recent_experience
         assert 0.0 <= scored.total_score <= 1.0
         
-        # Check breakdown exists
-        assert "keyword_match" in scored.score_breakdown
-        assert "skill_match" in scored.score_breakdown
+        # Check breakdown exists with new scoring system
+        assert "llm_relevance" in scored.score_breakdown
         assert "impact_level" in scored.score_breakdown
         assert "recency" in scored.score_breakdown
-        assert "semantic_similarity" in scored.score_breakdown
         
-        # High impact + recent + good skill match should give high score
-        assert scored.total_score > 0.6
+        # High impact + recent + high LLM relevance should give high score
+        # 0.8 * 0.5 + 1.0 * 0.25 + 1.0 * 0.25 = 0.4 + 0.25 + 0.25 = 0.9
+        assert scored.total_score > 0.85
     
     def test_score_achievements_sorting(self, scorer, sample_achievement_high,
                                        sample_achievement_medium, sample_achievement_low,

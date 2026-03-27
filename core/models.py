@@ -312,21 +312,17 @@ class LLMConfig(BaseModel):
 
 class ScoringWeights(BaseModel):
     """Weights for achievement scoring."""
-    keyword_match: float = Field(default=0.30, ge=0.0, le=1.0)
-    skill_match: float = Field(default=0.25, ge=0.0, le=1.0)
-    impact_level: float = Field(default=0.20, ge=0.0, le=1.0)
-    recency: float = Field(default=0.15, ge=0.0, le=1.0)
-    semantic_similarity: float = Field(default=0.10, ge=0.0, le=1.0)
+    llm_relevance: float = Field(default=0.50, ge=0.0, le=1.0)
+    impact_level: float = Field(default=0.25, ge=0.0, le=1.0)
+    recency: float = Field(default=0.25, ge=0.0, le=1.0)
 
     @model_validator(mode='after')
     def validate_weights_sum(self) -> 'ScoringWeights':
         """Ensure weights sum to approximately 1.0."""
         total = (
-            self.keyword_match +
-            self.skill_match +
+            self.llm_relevance +
             self.impact_level +
-            self.recency +
-            self.semantic_similarity
+            self.recency
         )
         if not (0.99 <= total <= 1.01):  # Allow small floating point errors
             raise ValueError(f"Scoring weights must sum to 1.0, got {total}")
