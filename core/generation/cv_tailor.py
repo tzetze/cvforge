@@ -303,19 +303,35 @@ Job Requirements:
 - Key Skills: {matched_skills}
 - Seniority: {job_requirements.seniority_level or 'Not specified'}{job_context}
 
-CRITICAL INSTRUCTIONS:
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 - Output ONLY the rewritten summary text
 - Do NOT include explanations, notes, or commentary
-- Do NOT use phrases like "Rewritten Summary:", "Note:", etc.
-- Keep the SAME core content and meaning as the original
-- Do NOT add new accomplishments, responsibilities, or claims not in the original
-- Do NOT inflate the position level or seniority beyond what's stated
-- Rephrase to highlight relevant aspects, but stay truthful to the original
-- Use keywords from the job description naturally where they genuinely apply
-- Keep it concise and compact - aim for similar length as original, max 1.5x longer
-- Avoid filler words and corporate jargon
-- Maintain professional but direct tone
-- If the original mentions being "part of a team" or "participated", preserve that collaborative context
+
+STRICT LENGTH REQUIREMENT:
+- Count the words in the original summary
+- Your output MUST NOT exceed 1.2x the original word count
+- Keep it compact - remove unnecessary words, not add them
+- If original is 50 words, output max 60 words
+
+ABSOLUTE TRUTHFULNESS:
+- Use ONLY information present in the original
+- Do NOT add: new skills, new accomplishments, new responsibilities, new claims
+- Do NOT add phrases like "rigorous evaluation", "technical problem-solving", "well-designed foundations" unless in original
+- Do NOT expand simple statements into complex ones
+- If original says "Cloud Video Streaming", keep it - don't change to "Platform-focused"
+- If original says "engineering leadership", don't expand to "leading technical problem-solving initiatives"
+
+WHAT YOU CAN DO:
+- Reorder sentences for better flow
+- Replace generic words with job-relevant synonyms (only if meaning stays same)
+- Emphasize existing skills that match job requirements
+- Adjust phrasing slightly to sound more relevant
+
+WHAT YOU CANNOT DO:
+- Add new information not in original
+- Make the text longer
+- Use corporate buzzwords not in original
+- Inflate or exaggerate claims
 
 Output the rewritten summary text only:"""
         
@@ -379,20 +395,35 @@ Original Role Description:
 Position: {position} at {company}
 Target Job Requirements: {", ".join(job_skills[:5])}{job_context}
 
-CRITICAL INSTRUCTIONS:
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 - Output ONLY the rewritten role description text
 - Do NOT include explanations, notes, or commentary
-- This should be a SUMMARY of the role's responsibilities and scope (like "Led a team of...", "Responsible for...", "Managed...")
-- Do NOT write it as an achievement or accomplishment
-- Keep it concise and compact - aim for similar length as original, max 1.5x longer
-- Keep core responsibilities truthful and accurate - do NOT add responsibilities not mentioned
-- Do NOT inflate the role level (e.g., if original says "participated" or "part of team", keep that collaborative context)
-- Emphasize aspects of the role relevant to the target position
-- Use keywords from the job description naturally where they genuinely apply
-- Write in past tense for the role description
-- Maintain professional but direct tone - avoid filler words and buzzwords
-- Do NOT add false information or exaggerate
-- Preserve important details like team names, project names, or specific contexts mentioned in original
+
+STRICT LENGTH REQUIREMENT:
+- Count the words in the original description
+- Your output MUST NOT exceed 1.2x the original word count
+- Keep it compact - aim for SAME length or slightly shorter
+
+ABSOLUTE TRUTHFULNESS:
+- Use ONLY information present in the original
+- Do NOT add: new responsibilities, new technologies, new team structures, new claims
+- Do NOT expand simple statements into complex ones
+- If original says "participated", keep it - don't change to "led" or "drove"
+- If original mentions specific team names (e.g., "SWAT team"), preserve them exactly
+- Do NOT add phrases not in original like "architecting scalable solutions", "cross-functional collaboration" unless explicitly stated
+
+WHAT YOU CAN DO:
+- Reorder sentences for better flow
+- Replace generic words with job-relevant synonyms (only if meaning stays same)
+- Emphasize existing responsibilities that match job requirements
+- Adjust phrasing slightly to sound more relevant
+
+WHAT YOU CANNOT DO:
+- Add new information not in original
+- Make the text longer
+- Use corporate buzzwords not in original
+- Inflate role level or responsibilities
+- Change collaborative context to individual ownership
 
 Output the rewritten role description only:"""
         
@@ -600,35 +631,43 @@ Original Achievements:
 Job Requirements: {", ".join(job_skills[:5])}
 {job_context}
 
-CRITICAL INSTRUCTIONS - READ CAREFULLY:
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 - Output ONLY the rewritten achievements, numbered 1-{len(achievements)}
 - Each achievement on its own line, starting with the number
 - Do NOT include explanations, notes, or commentary
 
-TRUTHFULNESS & AUTHENTICITY:
-- Keep the SAME core accomplishment - do NOT add new claims or inflate achievements
-- Do NOT add metrics, technologies, or details not in the original
-- If original says "participated" or "part of team", preserve that collaborative context
-- Do NOT elevate individual contribution level beyond what's stated
-- Preserve specific names (team names, project names, technologies) mentioned in original
+STRICT LENGTH REQUIREMENT:
+- Each achievement MUST NOT exceed 1.2x the original word count
+- Count words in each original achievement
+- Keep compact - aim for SAME length or slightly shorter
+- Maximum {max_words} words per achievement
 
-LENGTH & STYLE:
-- Keep compact and concise - aim for similar length as original, max 1.5x longer
-- Avoid filler words, buzzwords, and corporate jargon
-- Use direct, clear language
-- Each achievement should be under {max_words} words
+ABSOLUTE TRUTHFULNESS:
+- Use ONLY information present in the original achievement
+- Do NOT add: new metrics, new technologies, new responsibilities, new outcomes
+- Do NOT expand simple statements into complex ones
+- If original says "participated", keep it - don't change to "led", "drove", "spearheaded"
+- If original says "part of team", preserve that - don't make it sound like individual work
+- Preserve specific names (team names like "SWAT team", project names, technologies) exactly
+- Do NOT add phrases like "architecting scalable solutions", "cross-functional collaboration", "rigorous evaluation" unless in original
+
+WHAT YOU CAN DO:
+- Reorder words for better flow
+- Replace generic verbs with job-relevant synonyms (only if meaning stays same)
+- Emphasize existing skills/technologies that match job requirements
+- Adjust phrasing slightly to sound more relevant
+
+WHAT YOU CANNOT DO:
+- Add new information not in original
+- Make achievements longer
+- Use corporate buzzwords not in original
+- Inflate individual contribution level
+- Change collaborative work to individual ownership
 
 VOCABULARY & VARIETY:
-- VARY your vocabulary across achievements to keep them distinct
-- Common words (independently, successfully, effectively) can be used but LIMIT to once or twice total
-- DISTINCTIVE words (spearheaded, orchestrated, pioneered) should be used ONLY ONCE across all achievements
-- Use diverse action verbs - don't repeat the same verb across achievements
-- Each achievement should sound unique while remaining professional
-
-KEYWORD INTEGRATION:
-- Incorporate relevant keywords naturally ONLY where they genuinely apply
-- Do NOT force keywords that don't match the actual work done
-- Highlight genuine matches between original content and job requirements
+- Use diverse action verbs - don't repeat the same verb
+- Avoid overusing distinctive words (spearheaded, orchestrated, pioneered)
+- Keep each achievement unique while remaining professional
 
 Output format:
 1. [First rewritten achievement]
@@ -740,32 +779,35 @@ Other achievements in this experience (for context - use DIFFERENT vocabulary):
 Job Requirements: {", ".join(job_skills[:5])}
 {job_context}
 
-CRITICAL INSTRUCTIONS - READ CAREFULLY:
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 - Output ONLY the rewritten achievement text
 - Do NOT include explanations, notes, or commentary
 
-TRUTHFULNESS & AUTHENTICITY:
-- Keep the SAME core accomplishment - do NOT add new claims or inflate achievement
-- Do NOT add metrics, technologies, or details not in the original
-- If original says "participated" or "part of team", preserve that collaborative context
-- Do NOT elevate individual contribution level beyond what's stated
-- Preserve specific names (team names, project names, technologies) mentioned in original
+STRICT LENGTH REQUIREMENT:
+- Count the words in the original achievement
+- Your output MUST NOT exceed 1.2x the original word count
+- Keep compact - aim for SAME length or slightly shorter
+- Maximum {max_words} words
 
-LENGTH & STYLE:
-- Keep compact and concise - aim for similar length as original, max 1.5x longer
-- Keep under {max_words} words
-- Avoid filler words, buzzwords, and corporate jargon
-- Use direct, clear language
+ABSOLUTE TRUTHFULNESS:
+- Use ONLY information present in the original
+- Do NOT add: new metrics, new technologies, new responsibilities, new outcomes
+- Do NOT expand simple statements into complex ones
+- If original says "participated", keep it - don't change to "led", "drove", "spearheaded"
+- Preserve specific names (team names, project names, technologies) exactly
+- Do NOT add phrases not in original
 
-VOCABULARY & VARIETY:
-- IMPORTANT: Use DIFFERENT vocabulary than the other achievements shown above
-- Avoid repeating distinctive words (spearheaded, orchestrated, pioneered, etc.) already used
-- Choose a unique action verb not used in other achievements
-- Maintain professional tone while being distinctive
+WHAT YOU CAN DO:
+- Reorder words for better flow
+- Replace generic verbs with job-relevant synonyms (only if meaning stays same)
+- Emphasize existing skills that match job requirements
+- Use DIFFERENT vocabulary than other achievements shown above
 
-KEYWORD INTEGRATION:
-- Incorporate relevant keywords naturally ONLY where they genuinely apply
-- Do NOT force keywords that don't match the actual work done
+WHAT YOU CANNOT DO:
+- Add new information not in original
+- Make the text longer
+- Use corporate buzzwords not in original
+- Inflate individual contribution level
 
 Output only the rewritten achievement:"""
         
@@ -829,35 +871,38 @@ Achievement Skills: {", ".join(skills)}
 Job Requirements: {", ".join(job_skills[:5])}
 Matching Skills: {", ".join(matching_skills) if matching_skills else "None"}{job_context}
 
-CRITICAL INSTRUCTIONS - READ CAREFULLY:
+CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 - Output ONLY the rewritten achievement text
 - Do NOT include explanations, notes, or commentary
 - Do NOT use phrases like "Rewritten Achievement:", "Key Changes:", "Note:", etc.
 
-TRUTHFULNESS & AUTHENTICITY:
-- Keep the SAME core accomplishment - do NOT add new claims or inflate achievement
-- Do NOT add metrics, technologies, or details not in the original
-- If original says "participated" or "part of team", preserve that collaborative context
-- Do NOT elevate individual contribution level beyond what's stated
-- Preserve specific names (team names, project names, technologies) mentioned in original
+STRICT LENGTH REQUIREMENT:
+- Count the words in the original achievement
+- Your output MUST NOT exceed 1.2x the original word count
+- Keep compact - aim for SAME length or slightly shorter
+- Keep it concise (1-2 sentences)
+
+ABSOLUTE TRUTHFULNESS:
+- Use ONLY information present in the original
+- Do NOT add: new metrics, new technologies, new responsibilities, new outcomes
+- Do NOT expand simple statements into complex ones
+- If original says "participated", keep it - don't change to "led", "drove", "spearheaded"
+- Preserve specific names (team names, project names, technologies) exactly
+- Do NOT add phrases not in original
 - Maintain the same level of impact as the original
 
-LENGTH & STYLE:
-- Keep compact and concise - aim for similar length as original, max 1.5x longer
-- Keep it concise (1-2 sentences)
-- Avoid filler words, buzzwords, and corporate jargon
-- Use direct, clear language
+WHAT YOU CAN DO:
+- Reorder words for better flow
+- Replace generic verbs with job-relevant synonyms (only if meaning stays same)
+- Emphasize existing skills that match job requirements
+- Use diverse vocabulary to keep each achievement distinct
 
-VOCABULARY & VARIETY:
-- VARY your word choice - avoid repeating the same words across different achievements
-- Use diverse vocabulary and phrasing to keep each achievement distinct
-- Do NOT overuse words like "independently", "proactively", "successfully" etc.
-- Each achievement should sound unique and professional
-
-KEYWORD INTEGRATION:
-- Emphasize skills relevant to the target role
-- Incorporate relevant keywords naturally ONLY where they genuinely apply
-- Do NOT force keywords that don't match the actual work done
+WHAT YOU CANNOT DO:
+- Add new information not in original
+- Make the text longer
+- Use corporate buzzwords not in original
+- Inflate individual contribution level
+- Force keywords that don't match actual work
 
 Output the rewritten achievement text only:"""
         
