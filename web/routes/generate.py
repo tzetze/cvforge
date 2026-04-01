@@ -630,6 +630,13 @@ def analyze():
         session['match_score'] = overall_match
         session['job_match_summary'] = match_summary
         
+        # Prepare data for PDF download (store in session)
+        summary = selected_content.summary or tailored_cv_data.summary
+        experiences = selected_content.experiences
+        
+        session['tailored_summary'] = summary
+        session['tailored_experiences'] = experiences
+        
         return render_template(
             'generate/analyze.html',
             job_info=job_info,
@@ -645,51 +652,11 @@ def analyze():
 
 # OLD TAILOR ROUTE - DEPRECATED IN TAILOR-FIRST WORKFLOW
 # Tailoring now happens upfront in /generate/tailor-all
-# This route is kept for backward compatibility but redirects to preview
 @generate_bp.route('/tailor', methods=['GET', 'POST'])
 def tailor():
     """Tailor CV content with LLM (optional step) - DEPRECATED in tailor-first workflow."""
-    flash('Tailoring now happens automatically. Proceeding to preview.', 'info')
-    return redirect(url_for('generate.preview'))
-
-
-@generate_bp.route('/preview')
-def preview():
-    """Preview generated CV before downloading (content already tailored)."""
-    try:
-        # Load CV data for personal info
-        cv_data_path = current_app.config['CV_DATA_PATH']
-        cv_data = load_cv_data(str(cv_data_path))
-        
-        # Get selected content from session (already tailored and scored)
-        selected_experiences_data = session.get('selected_experiences', [])
-        selected_summary = session.get('selected_summary')
-        
-        if not selected_experiences_data:
-            flash('Session expired. Please start over from job input.', 'warning')
-            return redirect(url_for('generate.job_input'))
-        
-        # Content is already tailored from tailor-all step
-        # Just display what was selected in analyze step
-        summary = selected_summary or cv_data.summary
-        experiences = selected_experiences_data
-        
-        # Store for PDF download
-        session['tailored_summary'] = summary
-        session['tailored_experiences'] = experiences
-        
-        return render_template(
-            'generate/preview.html',
-            cv_data=cv_data,
-            summary=summary,
-            experiences=experiences,
-            match_score=session.get('match_score', 0)
-        )
-    
-    except Exception as e:
-        logger.error(f"Error generating preview: {e}")
-        flash(f'Error: {str(e)}', 'danger')
-        return redirect(url_for('generate.job_input'))
+    flash('Tailoring now happens automatically. Proceeding to download.', 'info')
+    return redirect(url_for('generate.download'))
 
 
 @generate_bp.route('/download')
