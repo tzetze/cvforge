@@ -316,6 +316,7 @@
     <div class="education-item">
         <div>
             <span class="degree">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</span>
+            {% if edu.status %}<span> ({{ edu.status.value.replace('-', ' ').title() }})</span>{% endif %}
         </div>
         <div>
             <span class="institution">{{ edu.institution }}</span>

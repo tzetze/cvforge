@@ -366,6 +366,8 @@
                 {% for edu in education %}
                 <div class="education-item-sidebar">
                     <div class="degree">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+                    {% if edu.status %}<div style="font-size: 9pt; color: #666;">{{ edu.status.value.replace('-', '
+                        ').title() }}</div>{% endif %}
                     <div class="institution">{{ edu.institution }}</div>
                     {% if edu.graduation_date %}<div>{{ edu.graduation_date }}</div>{% endif %}
                     {% if edu.gpa %}<div>GPA: {{ edu.gpa }}</div>{% endif %}
