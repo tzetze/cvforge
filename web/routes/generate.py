@@ -776,6 +776,9 @@ def download():
             education=cv_data.education,
             certifications=cv_data.certifications,
             projects=cv_data.projects,
+            volunteer=cv_data.volunteer,
+            publications=cv_data.publications,
+            awards=cv_data.awards,
             output_path=output_path
         )
         
