@@ -44,7 +44,7 @@ class PDFGenerator:
     def __init__(
         self,
         templates_dir: Optional[Path] = None,
-        default_template: str = "modern"
+        default_template: str = "default"
     ):
         """
         Initialize PDF generator.
@@ -390,7 +390,7 @@ class PDFGenerator:
 def generate_cv_pdf(
     cv_data: CVData,
     output_path: Path,
-    template_name: str = "modern",
+    template_name: str = "default",
     custom_css: Optional[str] = None
 ) -> Path:
     """

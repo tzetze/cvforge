@@ -250,10 +250,19 @@
             <a href="{{ url_for('generate.review_tailored') }}" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Review
             </a>
-            <a href="{{ url_for('generate.download') }}" class="btn btn-success btn-lg">
+            <a href="#" id="downloadBtn" class="btn btn-success btn-lg">
                 <i class="bi bi-download"></i> Download PDF
             </a>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get template from sessionStorage and add to download link
+        const downloadBtn = document.getElementById('downloadBtn');
+        const selectedTemplate = sessionStorage.getItem('selectedTemplate') || 'default';
+        downloadBtn.href = "{{ url_for('generate.download') }}?template=" + selectedTemplate;
+    });
+</script>
 {% endblock %}

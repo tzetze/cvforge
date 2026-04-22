@@ -89,6 +89,10 @@ def job_input():
 def tailor_all():
     """Tailor all achievements upfront before scoring/selection."""
     try:
+        # Store template selection if provided
+        template = request.args.get('template', 'default')
+        session['selected_template'] = template
+        
         # Get job description from session
         job_description = session.get('job_description')
         
@@ -663,6 +667,10 @@ def tailor():
 def download():
     """Generate and download PDF."""
     try:
+        # Get selected template from session or query param
+        template_name = request.args.get('template') or session.get('selected_template', 'default')
+        session['selected_template'] = template_name
+        
         # Load CV data
         cv_data_path = current_app.config['CV_DATA_PATH']
         cv_data = load_cv_data(str(cv_data_path))
@@ -766,7 +774,7 @@ def download():
         output_dir.mkdir(exist_ok=True)
         output_path = output_dir / f"{name_slug}_cv_{timestamp}.pdf"
         
-        logger.info(f"Generating PDF to: {output_path}")
+        logger.info(f"Generating PDF to: {output_path} using template: {template_name}")
         
         generator.generate_pdf_from_selected_content(
             personal_info=cv_data.personal.model_dump(),
@@ -779,7 +787,8 @@ def download():
             volunteer=cv_data.volunteer,
             publications=cv_data.publications,
             awards=cv_data.awards,
-            output_path=output_path
+            output_path=output_path,
+            template_name=template_name
         )
         
         if not output_path.exists():
