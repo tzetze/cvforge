@@ -767,12 +767,20 @@ def download():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         name_slug = cv_data.personal.name.lower().replace(" ", "_")
         
+        # Get company name from session for filename
+        job_company = session.get('job_company') or session.get('job_info', {}).get('company')
+        if job_company:
+            company_slug = job_company.lower().replace(" ", "_").replace("/", "_").replace("\\", "_")
+            filename = f"{name_slug}_cv_{company_slug}_{timestamp}.pdf"
+        else:
+            filename = f"{name_slug}_cv_{timestamp}.pdf"
+        
         # Use absolute path from project root
         from pathlib import Path
         project_root = Path(current_app.root_path).parent
         output_dir = project_root / 'output'
         output_dir.mkdir(exist_ok=True)
-        output_path = output_dir / f"{name_slug}_cv_{timestamp}.pdf"
+        output_path = output_dir / filename
         
         logger.info(f"Generating PDF to: {output_path} using template: {template_name}")
         
@@ -796,10 +804,17 @@ def download():
         
         logger.info(f"PDF successfully created at: {output_path}")
         
+        # Set download filename with company name if available
+        if job_company:
+            company_slug = job_company.lower().replace(" ", "_").replace("/", "_").replace("\\", "_")
+            download_name = f"{name_slug}_cv_{company_slug}.pdf"
+        else:
+            download_name = f"{name_slug}_cv.pdf"
+        
         return send_file(
             str(output_path),
             as_attachment=True,
-            download_name=f"{name_slug}_cv.pdf",
+            download_name=download_name,
             mimetype='application/pdf'
         )
     
