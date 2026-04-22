@@ -231,6 +231,7 @@ class Award(BaseModel):
     issuer: str = Field(..., min_length=1, description="Issuing organization")
     date: str = Field(..., pattern=r'^\d{4}-\d{2}$', description="Award date (YYYY-MM)")
     description: Optional[str] = Field(default=None, description="Award description")
+    product: Optional[str] = Field(default=None, description="Product/project the award is related to")
 
 
 # Main CV Data Model

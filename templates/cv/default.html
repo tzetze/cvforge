@@ -400,8 +400,9 @@
     <h2>Awards & Recognition</h2>
     {% for award in awards %}
     <div class="award-item">
-        <span class="item-title">{{ award.title }}</span> | <span class="item-subtitle">{{ award.issuer }}, {{
-            award.date }}</span>
+        <span class="item-title">{{ award.title }}</span>
+        {% if award.product %}<br><span class="item-subtitle">Product: {{ award.product }}</span>{% endif %}
+        <br><span class="item-subtitle">{{ award.issuer }}, {{ award.date|format_date }}</span>
         {% if award.description %}<br>{{ award.description }}{% endif %}
     </div>
     {% endfor %}

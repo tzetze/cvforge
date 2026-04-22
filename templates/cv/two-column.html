@@ -397,7 +397,11 @@
                 {% for award in awards %}
                 <div class="award-item">
                     <div class="item-title">{{ award.title }}</div>
-                    <div class="item-subtitle">{{ award.issuer }}, {{ award.date }}</div>
+                    {% if award.product %}<div style="font-size: 8.5pt; color: #555; margin-top: 0.02in;">Product: {{
+                        award.product }}</div>{% endif %}
+                    <div class="item-subtitle">{{ award.issuer }}, {{ award.date|format_date }}</div>
+                    {% if award.description %}<div style="font-size: 8.5pt; margin-top: 0.02in;">{{ award.description }}
+                    </div>{% endif %}
                 </div>
                 {% endfor %}
             </div>
