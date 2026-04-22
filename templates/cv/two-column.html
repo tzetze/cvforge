@@ -72,6 +72,10 @@
             margin: 0 0.12in;
         }
 
+        .contact-info .link {
+            color: #3498db;
+        }
+
         /* Summary section - full width above columns */
         .summary {
             margin-bottom: 0.15in;
@@ -294,10 +298,10 @@
     <div class="header">
         <h1>{{ personal_info.name }}</h1>
         <div class="contact-info">
-            {% if personal_info.email %}<span>{{ personal_info.email }}</span>{% endif %}
-            {% if personal_info.phone %}<span>{{ personal_info.phone }}</span>{% endif %}
+            {% if personal_info.email %}<span class="link">{{ personal_info.email }}</span>{% endif %}
+            {% if personal_info.phone %}<span>{{ personal_info.phone|format_phone }}</span>{% endif %}
             {% if personal_info.location %}<span>{{ personal_info.location }}</span>{% endif %}
-            {% if personal_info.linkedin %}<span>{{ personal_info.linkedin }}</span>{% endif %}
+            {% if personal_info.linkedin %}<span class="link">{{ personal_info.linkedin }}</span>{% endif %}
             {% if personal_info.github %}<span>{{ personal_info.github }}</span>{% endif %}
             {% if personal_info.website %}<span>{{ personal_info.website }}</span>{% endif %}
         </div>
@@ -409,7 +413,7 @@
                     <div class="job-title">{{ exp.position }}</div>
                     <div class="company">{{ exp.company }}</div>
                     <div class="date-location">
-                        {{ exp.start_date }} - {{ exp.end_date|default('Present') }}
+                        {{ exp.start_date|format_date }} - {{ exp.end_date|default('Present')|format_date }}
                         {% if exp.location %} | {{ exp.location }}{% endif %}
                     </div>
                 </div>

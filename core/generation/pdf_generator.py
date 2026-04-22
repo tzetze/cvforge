@@ -16,6 +16,63 @@ from weasyprint.text.fonts import FontConfiguration
 
 from core.models import CVData, Experience, Achievement
 
+
+def format_date(date_str: str) -> str:
+    """
+    Convert YYYY-MM format to 'Month YYYY' format.
+    
+    Args:
+        date_str: Date string in YYYY-MM format
+        
+    Returns:
+        Formatted date string like 'January 2024'
+    """
+    if not date_str or date_str.lower() == 'present':
+        return date_str
+    
+    try:
+        # Parse YYYY-MM format
+        date_obj = datetime.strptime(date_str, "%Y-%m")
+        return date_obj.strftime("%B %Y")
+    except ValueError:
+        # If parsing fails, return original
+        return date_str
+
+
+def format_phone(phone_str: str) -> str:
+    """
+    Format phone number with spaces for better readability.
+    Assumes format: +COUNTRY PREFIX NUMBERS
+    
+    Args:
+        phone_str: Phone number string
+        
+    Returns:
+        Formatted phone number
+    """
+    if not phone_str:
+        return phone_str
+    
+    # Remove all spaces and dashes first
+    cleaned = phone_str.replace(' ', '').replace('-', '')
+    
+    # If it starts with +, format as: +CC PREFIX XXX XXXX
+    if cleaned.startswith('+'):
+        # Extract country code (assume 1-3 digits after +)
+        if len(cleaned) > 4:
+            # Try to intelligently split: +CC PREFIX XXX XXXX
+            country_code = cleaned[1:3] if len(cleaned) > 10 else cleaned[1:2]
+            rest = cleaned[len(country_code)+1:]
+            
+            if len(rest) >= 7:
+                # Format last 7+ digits as XXX XXXX
+                prefix = rest[:-7]
+                last_seven = rest[-7:]
+                formatted_last = f"{last_seven[:3]} {last_seven[3:]}"
+                return f"+{country_code} {prefix} {formatted_last}".strip()
+    
+    return phone_str
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,6 +125,10 @@ class PDFGenerator:
             trim_blocks=True,
             lstrip_blocks=True
         )
+        
+        # Register custom filters
+        self.jinja_env.filters['format_date'] = format_date
+        self.jinja_env.filters['format_phone'] = format_phone
         
         # Configure fonts for WeasyPrint
         self.font_config = FontConfiguration()
